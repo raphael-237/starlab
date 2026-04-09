@@ -11,12 +11,17 @@ def load_data():
     ensure_data_dir()
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            data = json.load(f)
+            # Migration: ajouter la collection patients si elle n'existe pas
+            if "patients" not in data:
+                data["patients"] = []
+            return data
     return {
         "prescripteurs": [],
         "categories": [],
         "examens": [],
         "decades": [],
+        "patients": [],      # Nouvelle collection
         "transactions": []
     }
 

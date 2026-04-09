@@ -144,6 +144,106 @@
             "id": 29,
             "nom": "Mme. BILKISSOU",
             "service": "Médecine General"
+        },
+        {
+            "id": 30,
+            "nom": "Dr Abada",
+            "service": "Importé"
+        },
+        {
+            "id": 31,
+            "nom": "Dr Owona",
+            "service": "Importé"
+        },
+        {
+            "id": 32,
+            "nom": "Dr Atchoum",
+            "service": "Médecine Generale"
+        },
+        {
+            "id": 33,
+            "nom": "Dr Lefang",
+            "service": "Importé"
+        },
+        {
+            "id": 34,
+            "nom": "Mme Tepi",
+            "service": "Importé"
+        },
+        {
+            "id": 35,
+            "nom": "Dr Ndong",
+            "service": "Importé"
+        },
+        {
+            "id": 36,
+            "nom": "Mme Alima",
+            "service": "Importé"
+        },
+        {
+            "id": 37,
+            "nom": "Dr Ella",
+            "service": "Importé"
+        },
+        {
+            "id": 38,
+            "nom": "Mme Mvaze",
+            "service": "Importé"
+        },
+        {
+            "id": 39,
+            "nom": "Dr Ngou Ngui",
+            "service": "Importé"
+        },
+        {
+            "id": 40,
+            "nom": "Dr Esso",
+            "service": "Importé"
+        },
+        {
+            "id": 41,
+            "nom": "Dr Savom",
+            "service": "Importé"
+        },
+        {
+            "id": 42,
+            "nom": "Dr Bote",
+            "service": "Importé"
+        },
+        {
+            "id": 43,
+            "nom": "Dr Ngah",
+            "service": "Importé"
+        },
+        {
+            "id": 44,
+            "nom": "Dr Ndjie",
+            "service": "Importé"
+        },
+        {
+            "id": 45,
+            "nom": "Dr Atamaria",
+            "service": "Importé"
+        },
+        {
+            "id": 46,
+            "nom": "Dr Wandji",
+            "service": "Importé"
+        },
+        {
+            "id": 47,
+            "nom": "Dr Melele",
+            "service": "Importé"
+        },
+        {
+            "id": 48,
+            "nom": "Dr Ndombi",
+            "service": "Importé"
+        },
+        {
+            "id": 49,
+            "nom": "Dr Nnomo",
+            "service": "Importé"
         }
     ],
     "categories": [
@@ -731,58 +831,26 @@
     ],
     "transactions": [
         {
-            "id": 5,
-            "examen_id": 2,
+            "id": 1,
+            "group_id": 1,
+            "patient_id": 1,
             "prescripteur_id": 1,
-            "quantite_payee": 8,
-            "quantite_gratuite": 0,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-06 23:23:25"
-        },
-        {
-            "id": 6,
-            "examen_id": 3,
-            "prescripteur_id": 1,
-            "quantite_payee": 2,
-            "quantite_gratuite": 0,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-06 23:26:02"
-        },
-        {
-            "id": 7,
-            "examen_id": 5,
-            "prescripteur_id": 1,
-            "quantite_payee": 3,
-            "quantite_gratuite": 2,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-06 23:27:50"
-        },
-        {
-            "id": 8,
-            "examen_id": 6,
-            "prescripteur_id": 26,
-            "quantite_payee": 139,
-            "quantite_gratuite": 43,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-07 15:51:06"
-        },
-        {
-            "id": 9,
-            "examen_id": 37,
-            "prescripteur_id": 3,
-            "quantite_payee": 264,
-            "quantite_gratuite": 0,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-07 15:59:29"
-        },
-        {
-            "id": 10,
             "examen_id": 1,
-            "prescripteur_id": 3,
-            "quantite_payee": 2,
-            "quantite_gratuite": 4,
-            "decade_id": 11,
-            "date_enregistrement": "2026-04-07 16:25:11"
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 10,
+            "date_enregistrement": "2026-04-09 12:59:53"
+        }
+    ],
+    "patients": [
+        {
+            "id": 1,
+            "numero_ordre": 1,
+            "sexe": "F",
+            "age": 30,
+            "date_enregistrement": "2026-04-01 00:00:00",
+            "date_jour": "2026-04-01",
+            "is_imported": false
         }
     ]
 }

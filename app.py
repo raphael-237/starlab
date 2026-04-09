@@ -284,6 +284,8 @@ def main():
             from pages.decades_page import show; show()
         elif selected == "Transactions":
             from pages.transactions_page import show; show()
+        elif selected == "Rapport Annuel":
+            from pages.rapport_annuel_page import show; show()    
         elif selected == "Statistiques Financières":
             from pages.statistiques_page import show; show()
         elif selected == "Statistiques par Prescripteur":

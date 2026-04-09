@@ -144,6 +144,106 @@
             "id": 29,
             "nom": "Mme. BILKISSOU",
             "service": "Médecine General"
+        },
+        {
+            "id": 30,
+            "nom": "Dr Abada",
+            "service": "Importé"
+        },
+        {
+            "id": 31,
+            "nom": "Dr Owona",
+            "service": "Importé"
+        },
+        {
+            "id": 32,
+            "nom": "Dr Atchoum",
+            "service": "Médecine Generale"
+        },
+        {
+            "id": 33,
+            "nom": "Dr Lefang",
+            "service": "Importé"
+        },
+        {
+            "id": 34,
+            "nom": "Mme Tepi",
+            "service": "Importé"
+        },
+        {
+            "id": 35,
+            "nom": "Dr Ndong",
+            "service": "Importé"
+        },
+        {
+            "id": 36,
+            "nom": "Mme Alima",
+            "service": "Importé"
+        },
+        {
+            "id": 37,
+            "nom": "Dr Ella",
+            "service": "Importé"
+        },
+        {
+            "id": 38,
+            "nom": "Mme Mvaze",
+            "service": "Importé"
+        },
+        {
+            "id": 39,
+            "nom": "Dr Ngou Ngui",
+            "service": "Importé"
+        },
+        {
+            "id": 40,
+            "nom": "Dr Esso",
+            "service": "Importé"
+        },
+        {
+            "id": 41,
+            "nom": "Dr Savom",
+            "service": "Importé"
+        },
+        {
+            "id": 42,
+            "nom": "Dr Bote",
+            "service": "Importé"
+        },
+        {
+            "id": 43,
+            "nom": "Dr Ngah",
+            "service": "Importé"
+        },
+        {
+            "id": 44,
+            "nom": "Dr Ndjie",
+            "service": "Importé"
+        },
+        {
+            "id": 45,
+            "nom": "Dr Atamaria",
+            "service": "Importé"
+        },
+        {
+            "id": 46,
+            "nom": "Dr Wandji",
+            "service": "Importé"
+        },
+        {
+            "id": 47,
+            "nom": "Dr Melele",
+            "service": "Importé"
+        },
+        {
+            "id": 48,
+            "nom": "Dr Ndombi",
+            "service": "Importé"
+        },
+        {
+            "id": 49,
+            "nom": "Dr Nnomo",
+            "service": "Importé"
         }
     ],
     "categories": [
@@ -170,6 +270,11 @@
         {
             "id": 5,
             "nom": "BCH STD",
+            "description": ""
+        },
+        {
+            "id": 6,
+            "nom": "KITS DE PRELEVEMENT",
             "description": ""
         }
     ],
@@ -425,6 +530,13 @@
             "categorie_id": 4,
             "prix": 0.0,
             "add_date": "2026-04-06"
+        },
+        {
+            "id": 37,
+            "nom": "KIT DE PRELEVEMENT",
+            "categorie_id": 6,
+            "prix": 500.0,
+            "add_date": "2026-04-07"
         }
     ],
     "decades": [
@@ -717,69 +829,16 @@
             "date_fin": "2026-12-31"
         }
     ],
-    "transactions": [
+    "transactions": [],
+    "patients": [
         {
             "id": 1,
-            "examen_id": 1,
-            "prescripteur_id": 1,
-            "quantite_payee": 8,
-            "quantite_gratuite": 0,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-06 20:41:10"
-        },
-        {
-            "id": 2,
-            "examen_id": 1,
-            "prescripteur_id": 1,
-            "quantite_payee": 8,
-            "quantite_gratuite": 0,
-            "decade_id": 11,
-            "date_enregistrement": "2026-04-06 20:42:39"
-        },
-        {
-            "id": 3,
-            "examen_id": 1,
-            "prescripteur_id": 1,
-            "quantite_payee": 0,
-            "quantite_gratuite": 0,
-            "decade_id": 12,
-            "date_enregistrement": "2026-04-06 20:42:59"
-        },
-        {
-            "id": 4,
-            "examen_id": 36,
-            "prescripteur_id": 1,
-            "quantite_payee": 0,
-            "quantite_gratuite": 1,
-            "decade_id": 11,
-            "date_enregistrement": "2026-04-06 21:30:18"
-        },
-        {
-            "id": 5,
-            "examen_id": 2,
-            "prescripteur_id": 1,
-            "quantite_payee": 8,
-            "quantite_gratuite": 0,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-06 23:23:25"
-        },
-        {
-            "id": 6,
-            "examen_id": 3,
-            "prescripteur_id": 1,
-            "quantite_payee": 2,
-            "quantite_gratuite": 0,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-06 23:26:02"
-        },
-        {
-            "id": 7,
-            "examen_id": 5,
-            "prescripteur_id": 1,
-            "quantite_payee": 3,
-            "quantite_gratuite": 2,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-06 23:27:50"
+            "numero_ordre": 1,
+            "sexe": "F",
+            "age": 30,
+            "date_enregistrement": "2026-04-01 00:00:00",
+            "date_jour": "2026-04-01",
+            "is_imported": false
         }
     ]
 }

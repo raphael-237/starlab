@@ -133,6 +133,11 @@ def show():
             <p class="hero-sub">Bienvenue sur STARLAB • Votre centre de contrôle financier du Laboratoire.</p>
         </div>
     """, unsafe_allow_html=True)
+    st.markdown('<div style="margin-top: -20px; margin-bottom: 25px;">', unsafe_allow_html=True)
+    if st.button("📊 GÉNÉRER LE RAPPORT ANNUEL OFFICIEL", use_container_width=True):
+        st.session_state.current_page = "Rapport Annuel"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # ====================== KPI CARDS ======================
     # Préparation des données pour les KPIs
