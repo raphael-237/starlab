@@ -830,27 +830,7 @@
         }
     ],
     "transactions": [
-        {
-            "id": 1,
-            "group_id": 1,
-            "patient_id": 1,
-            "prescripteur_id": 1,
-            "examen_id": 1,
-            "quantite_payee": 1,
-            "quantite_gratuite": 0,
-            "decade_id": 10,
-            "date_enregistrement": "2026-04-09 12:59:53"
-        }
     ],
     "patients": [
-        {
-            "id": 1,
-            "numero_ordre": 1,
-            "sexe": "F",
-            "age": 30,
-            "date_enregistrement": "2026-04-01 00:00:00",
-            "date_jour": "2026-04-01",
-            "is_imported": false
-        }
     ]
 }
