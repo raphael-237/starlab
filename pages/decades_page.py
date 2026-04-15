@@ -15,6 +15,7 @@ def modal_generate_decades():
     """
     st.markdown("##### Paramètres de génération")
     st.write("Le système va créer automatiquement les 36 périodes (décades) pour l'année choisie.")
+    st.info("💡 Les décades existantes ne seront pas supprimées ou dupliquées.")
     
     annee = st.number_input("Année à générer", value=datetime.now().year, min_value=2020, max_value=2050)
     
@@ -22,24 +23,25 @@ def modal_generate_decades():
     annee_exist = any(d["annee"] == annee for d in data["decades"])
     
     if annee_exist:
-        st.warning(f"⚠️ Les décades pour l'année {annee} sont déjà présentes dans la base de données.")
+        st.warning(f"⚠️ Certaines décades pour l'année {annee} existent déjà. Seules celles manquantes seront ajoutées.")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
     if st.button("🚀 Lancer la génération automatique", type="primary", use_container_width=True):
-        if annee_exist:
-            st.error("Opération annulée : Cette année existe déjà.")
+        from modules.decades import generate_decades
+        count = generate_decades(int(annee))
+        if count > 0:
+            st.toast(f"✅ Succès : {count} nouvelles décades ont été générées pour {annee} !", icon="🎉")
         else:
-            from modules.decades import generate_decades
-            count = generate_decades(int(annee))
-            st.toast(f"✅ Succès : {count} décades ont été générées pour {annee} !", icon="🎉")
-            time.sleep(0.5)
-            st.rerun()
+            st.toast(f"ℹ️ Aucune nouvelle décade à ajouter pour {annee}. Toutes existent déjà.", icon="ℹ️")
+        time.sleep(0.5)
+        st.rerun()
 
 @st.dialog("🗑️ Supprimer une Année")
 def modal_delete_year():
     """
     Fenêtre modale pour supprimer toutes les décades d'une année spécifique.
+    La suppression est bloquée si des transactions sont liées à ces décades.
     """
     data = load_data()
     if not data["decades"]:
@@ -53,14 +55,19 @@ def modal_delete_year():
     decades_ids = [d["id"] for d in data["decades"] if d["annee"] == annee_del]
     used = any(t["decade_id"] in decades_ids for t in data["transactions"])
     
+    # Compter le nombre de transactions liées
+    transactions_count = sum(1 for t in data["transactions"] if t["decade_id"] in decades_ids)
+    
     st.markdown("<br>", unsafe_allow_html=True)
     
     if used:
-        st.error(f"⚠️ Impossible de supprimer {annee_del} : des transactions financières sont liées à cette période.")
+        st.error(f"⚠️ Impossible de supprimer {annee_del} : {transactions_count} transaction(s) financière(s) sont liées à cette période.")
+        st.info("💡 Pour préserver l'intégrité des données, les décades associées à des transactions ne peuvent pas être supprimées.")
         if st.button("Fermer la fenêtre", use_container_width=True):
             st.rerun()
     else:
         st.warning(f"Attention : Cette action est irréversible. Toutes les décades de l'année {annee_del} seront supprimées.")
+        st.caption(f"📊 {len(decades_ids)} décade(s) seront supprimées.")
         if st.button(f"🔥 Confirmer la suppression de {annee_del}", type="secondary", use_container_width=True):
             data["decades"] = [d for d in data["decades"] if d["annee"] != annee_del]
             save_data(data)
@@ -84,10 +91,10 @@ def show():
         st.markdown("<br>", unsafe_allow_html=True)
         col_btn1, col_btn2 = st.columns(2)
         with col_btn1:
-            if st.button("🚀 Générer", type="primary", use_container_width=True, help="Créer une nouvelle année"):
+            if st.button("🚀 Générer", type="primary", use_container_width=True, help="Ajouter une nouvelle année"):
                 modal_generate_decades()
         with col_btn2:
-            if st.button("🗑️ Purger", type="secondary", use_container_width=True, help="Supprimer une année complète"):
+            if st.button("🗑️ Purger", type="secondary", use_container_width=True, help="Supprimer une année complète (si aucune transaction liée)"):
                 modal_delete_year()
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -116,6 +123,10 @@ def show():
         
         # Affichage du tableau avec boutons
         for idx, row in df.iterrows():
+            # Vérifier si la décade a des transactions
+            nb_trans = len([t for t in data["transactions"] if t["decade_id"] == row["id"]])
+            has_transactions = nb_trans > 0
+            
             col1, col2, col3, col4, col5, col6, col7 = st.columns([1, 2, 2, 1, 2, 2, 2])
             with col1:
                 st.write(row['id'])
@@ -130,11 +141,24 @@ def show():
             with col6:
                 st.write(row['date_fin'])
             with col7:
-                if st.button("🔍 Détails", key=f"detail_{row['id']}"):
-                    # Afficher les détails dans une modale ou changer de page
-                    nb_trans = len([t for t in data["transactions"] if t["decade_id"] == row["id"]])
+                if st.button(f"🔍 Détails ({nb_trans})", key=f"detail_{row['id']}"):
                     st.info(f"📊 {row['periode']} {row['mois']} {row['annee']} : {nb_trans} transaction(s)")
             st.divider()
+        
+        # Afficher un résumé des statistiques
+        st.markdown("---")
+        st.markdown("### 📊 Statistiques des décades")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            total_decades = len(data["decades"])
+            st.metric("📅 Total décades", total_decades)
+        with col2:
+            annees_dispo = sorted(list(set(d["annee"] for d in data["decades"])))
+            st.metric("📆 Années disponibles", len(annees_dispo))
+        with col3:
+            decades_with_transactions = len(set(t["decade_id"] for t in data["transactions"]))
+            st.metric("📋 Décades avec transactions", decades_with_transactions)
+            
     else:
         st.info("Aucune période n'est configurée. Utilisez le bouton 'Générer' pour initialiser le système.")
     
