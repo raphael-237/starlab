@@ -835,6 +835,61 @@
             "date_fin": "2026-12-31"
         }
     ],
-    "transactions": [],
-    "patients": []
+    "transactions": [
+        {
+            "id": 1,
+            "group_id": 1,
+            "patient_id": 1,
+            "prescripteur_id": 20,
+            "examen_id": 10,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 10,
+            "date_enregistrement": "2026-04-15 19:17:51"
+        },
+        {
+            "id": 2,
+            "group_id": 1,
+            "patient_id": 1,
+            "prescripteur_id": 20,
+            "examen_id": 13,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 10,
+            "date_enregistrement": "2026-04-15 19:17:51"
+        },
+        {
+            "id": 3,
+            "group_id": 1,
+            "patient_id": 1,
+            "prescripteur_id": 20,
+            "examen_id": 10,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 10,
+            "date_enregistrement": "2026-04-15 19:17:51"
+        },
+        {
+            "id": 4,
+            "group_id": 1,
+            "patient_id": 1,
+            "prescripteur_id": 20,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 10,
+            "date_enregistrement": "2026-04-15 19:17:51"
+        }
+    ],
+    "patients": [
+        {
+            "id": 1,
+            "numero_ordre": 1,
+            "sexe": "F",
+            "age": 40,
+            "date_enregistrement": "2026-04-09 00:00:00",
+            "date_jour": "2026-04-09",
+            "is_imported": false
+        }
+    ]
 }

@@ -42,11 +42,18 @@ def parse_age(age_str):
     - "1 an" -> 1
     - "20 Ans, 6 mois" -> 20
     - "15 ans 3 mois" -> 15
+    - "2 semaines" -> 0
+    - "1 semaine" -> 0
+    - "3 jours" -> 0
     """
     if age_str is None or pd.isna(age_str):
         return None
     
     age_str = str(age_str).strip().lower()
+    
+    # Vérifier si c'est en semaines ou jours (moins d'un an)
+    if any(unit in age_str for unit in ['semaine', 'sem', 'jour', 'jr']):
+        return 0
     
     # Extraire les années
     # Pattern pour trouver un nombre suivi de 'an' ou 'ans'
@@ -108,6 +115,27 @@ def safe_str(value, default=""):
     if pd.isna(value):
         return default
     return str(value).strip()
+
+def has_any_data(row):
+    """
+    Vérifie si une ligne contient au moins une cellule avec des données
+    """
+    for cell in row:
+        if pd.notna(cell) and str(cell).strip() and str(cell).strip() not in ['', 'nan', 'NaN', 'None']:
+            return True
+    return False
+
+def find_data_rows(df, start_row=0):
+    """
+    Trouve toutes les lignes contenant des données (au moins une cellule non vide)
+    Retourne la liste des indices des lignes avec données
+    """
+    data_rows = []
+    for idx in range(start_row, len(df)):
+        row = df.iloc[idx]
+        if has_any_data(row):
+            data_rows.append(idx)
+    return data_rows
 
 def import_transactions_from_file(uploaded_file):
     """
@@ -172,8 +200,9 @@ def import_transactions_from_file(uploaded_file):
     except Exception as e:
         return False, f"Erreur de lecture du fichier: {str(e)}"
     
-    if df.shape[1] < 9:
-        return False, f"Le fichier doit contenir 9 colonnes. {df.shape[1]} colonne(s) détectée(s)."
+    # Vérifier le nombre de colonnes
+    if df.shape[1] < 10:
+        return False, f"Le fichier doit contenir 10 colonnes. {df.shape[1]} colonne(s) détectée(s)."
     
     # Détecter l'en-tête
     start_row = 0
@@ -184,19 +213,14 @@ def import_transactions_from_file(uploaded_file):
         if any(keyword in first_row_value for keyword in header_keywords):
             start_row = 1
     
-    # Filtrer les lignes vides
-    def has_data(row):
-        for cell in row:
-            if pd.notna(cell) and str(cell).strip() and str(cell).strip() not in ['', 'nan', 'NaN', 'None']:
-                return True
-        return False
+    # Trouver toutes les lignes avec des données (au moins une cellule non vide)
+    data_rows = find_data_rows(df, start_row)
     
-    # Créer une liste des lignes à traiter
-    rows_to_process = []
-    for idx in range(start_row, len(df)):
-        row = df.iloc[idx]
-        if has_data(row):
-            rows_to_process.append((idx, row))
+    if not data_rows:
+        return False, "Aucune ligne avec des données trouvée dans le fichier."
+    
+    # Créer la liste des lignes à traiter
+    rows_to_process = [(idx, df.iloc[idx]) for idx in data_rows]
     
     # Dictionnaires existants (normalisés)
     examens_dict = {}
@@ -228,7 +252,8 @@ def import_transactions_from_file(uploaded_file):
         "patients_created": 0,
         "transactions_created": 0,
         "prescripteurs_created": 0,
-        "imported_ids": {"patients": [], "transactions": []}
+        "imported_ids": {"patients": [], "transactions": []},
+        "preview_data": []  # Pour stocker les données d'aperçu
     }
     
     # Fonction pour normaliser un texte
@@ -243,22 +268,18 @@ def import_transactions_from_file(uploaded_file):
     
     # Fonction pour parser la quantité de kit
     def parse_kit_quantity(kit_value):
-        """Extrait la quantité de kit (peut être 0, 1, 2, 3, etc.)"""
         if pd.isna(kit_value):
             return 0
         
         kit_str = str(kit_value).strip().lower()
         
-        # Si c'est "/" ou vide, retourner 0
         if kit_str == '/' or kit_str == '' or kit_str == 'nan':
             return 0
         
-        # Chercher un nombre dans la chaîne
         numbers = re.findall(r'(\d+)', kit_str)
         if numbers:
             return int(numbers[0])
         
-        # Si c'est "kit" ou "oui" ou "x" sans nombre, retourner 1
         if any(word in kit_str for word in ['kit', 'oui', 'x', 'preleve', 'prélevé']):
             return 1
         
@@ -271,14 +292,11 @@ def import_transactions_from_file(uploaded_file):
         
         exam_normalized = normalize_text(exam_name)
         
-        # Vérifier les abréviations
         for abbr, full_name in exam_abbreviations.items():
             if exam_normalized == abbr or exam_normalized in abbr or abbr in exam_normalized:
                 return full_name
         
-        # Vérifier si c'est un mot simple
         if len(exam_normalized.split()) == 1:
-            # Essayer de mapper avec les abréviations
             for abbr, full_name in exam_abbreviations.items():
                 if abbr in exam_normalized or exam_normalized in abbr:
                     return full_name
@@ -290,24 +308,20 @@ def import_transactions_from_file(uploaded_file):
         if not exam_name:
             return None, None
         
-        # Résoudre les abréviations
         resolved_name = resolve_exam_name(exam_name)
         if not resolved_name:
             return None, None
         
         exam_normalized = resolved_name
         
-        # 1. Recherche exacte
         if exam_normalized in examens_dict:
             return examens_dict[exam_normalized]["id"], examens_dict[exam_normalized]["prix"]
         
-        # 2. Recherche par inclusion
         for db_name, exam_data in examens_dict.items():
             db_normalized = normalize_text(db_name)
             if exam_normalized in db_normalized or db_normalized in exam_normalized:
                 return exam_data["id"], exam_data["prix"]
         
-        # 3. Recherche par mots-clés
         exam_words = set(exam_normalized.split())
         for db_name, exam_data in examens_dict.items():
             db_normalized = normalize_text(db_name)
@@ -327,14 +341,11 @@ def import_transactions_from_file(uploaded_file):
         
         exam_string = str(exam_string)
         
-        # Remplacer les séparateurs
         for sep in [';', '|', '/', ' et ', ' + ', ' & ']:
             exam_string = exam_string.replace(sep, ',')
         
-        # Split par virgule
         parts = [p.strip() for p in exam_string.split(',') if p.strip()]
         
-        # Si pas de virgule, essayer de détecter par mots-clés
         if len(parts) == 1 and ' ' in parts[0]:
             exam_keywords = list(exam_abbreviations.keys()) + ['nfs', 'ge', 'crp', 'pcv', 'lav', 'bw', 'iono', 'combi', 'combi11']
             words = parts[0].split()
@@ -363,18 +374,15 @@ def import_transactions_from_file(uploaded_file):
         
         pres_normalized = normalize_text(pres_nom)
         
-        # Recherche exacte
         if pres_normalized in prescripteurs_dict:
             return prescripteurs_dict[pres_normalized]
         
-        # Recherche approximative
         for db_name, db_id in prescripteurs_dict.items():
             db_normalized = normalize_text(db_name)
             if pres_normalized in db_normalized or db_normalized in pres_normalized:
                 stats["warnings"].append(f"Prescripteur '{pres_nom}' correspond à '{db_name}'")
                 return db_id
         
-        # Création
         new_id = get_next_id(data["prescripteurs"])
         nom_formate = pres_nom.strip().title()
         new_pres = {"id": new_id, "nom": nom_formate, "service": "Importé"}
@@ -400,7 +408,8 @@ def import_transactions_from_file(uploaded_file):
             sexe_raw = safe_str(row[5])
             prescripteur_nom = safe_str(row[6])
             examens_raw = safe_str(row[7])
-            kit_raw = row[8]  # Garder la valeur brute pour le kit
+            kit_raw = row[8]
+            examens_gratuits_raw = safe_str(row[9])
             
             # Validations
             if annee is None or annee < 1900 or annee > 2100:
@@ -445,8 +454,8 @@ def import_transactions_from_file(uploaded_file):
                 stats["errors"].append(f"Ligne {line_num}: Prescripteur manquant")
                 continue
             
-            if not examens_raw:
-                stats["errors"].append(f"Ligne {line_num}: Examen manquant")
+            if not examens_raw and not examens_gratuits_raw:
+                stats["errors"].append(f"Ligne {line_num}: Aucun examen spécifié")
                 continue
             
             # Trouver le prescripteur
@@ -460,8 +469,9 @@ def import_transactions_from_file(uploaded_file):
             if kit_quantity > 0:
                 stats["warnings"].append(f"Ligne {line_num}: {kit_quantity} kit(s) de prélèvement enregistré(s)")
             
-            # Splitter les examens multiples
+            # Splitter les examens
             exam_list = split_multiple_exams(examens_raw)
+            exam_gratuit_list = split_multiple_exams(examens_gratuits_raw) if examens_gratuits_raw else []
             
             # Trouver la décade
             decade = get_decade_from_date(annee, mois, jour)
@@ -469,7 +479,7 @@ def import_transactions_from_file(uploaded_file):
                 stats["errors"].append(f"Ligne {line_num}: Décade non trouvée")
                 continue
             
-            # Pour chaque examen
+            # Pour chaque examen payant
             examens_trouves = []
             for exam_name in exam_list:
                 if not exam_name:
@@ -477,7 +487,7 @@ def import_transactions_from_file(uploaded_file):
                 
                 examen_id, examen_prix = find_matching_exam(exam_name)
                 if examen_id is None:
-                    stats["errors"].append(f"Ligne {line_num}: Examen '{exam_name}' non trouvé")
+                    stats["errors"].append(f"Ligne {line_num}: Examen payant '{exam_name}' non trouvé")
                 else:
                     examens_trouves.append({
                         "examen_id": examen_id,
@@ -485,9 +495,23 @@ def import_transactions_from_file(uploaded_file):
                         "quantite_gratuite": 0
                     })
             
-            # Ajouter le kit comme un examen si quantité > 0
+            # Pour chaque examen gratuit
+            for exam_name in exam_gratuit_list:
+                if not exam_name:
+                    continue
+                
+                examen_id, examen_prix = find_matching_exam(exam_name)
+                if examen_id is None:
+                    stats["errors"].append(f"Ligne {line_num}: Examen gratuit '{exam_name}' non trouvé")
+                else:
+                    examens_trouves.append({
+                        "examen_id": examen_id,
+                        "quantite_payee": 0,
+                        "quantite_gratuite": 1
+                    })
+            
+            # Ajouter le kit
             if kit_quantity > 0:
-                # Chercher l'examen "Kit de prélèvement" ou créer une entrée spéciale
                 kit_examen_id, _ = find_matching_exam("kit prelevement")
                 if kit_examen_id:
                     examens_trouves.append({
@@ -516,6 +540,19 @@ def import_transactions_from_file(uploaded_file):
             
             patients_groups[patient_key]["examens"].extend(examens_trouves)
             
+            # Ajouter aux données d'aperçu
+            for exam in examens_trouves:
+                stats["preview_data"].append({
+                    "date": f"{annee}-{mois:02d}-{jour:02d}",
+                    "numero_ordre": numero_ordre,
+                    "age": age,
+                    "sexe": sexe,
+                    "prescripteur": prescripteur_nom,
+                    "examen": exam.get("examen_nom", "Examen"),
+                    "quantite_payee": exam["quantite_payee"],
+                    "quantite_gratuite": exam["quantite_gratuite"]
+                })
+            
         except Exception as e:
             stats["errors"].append(f"Ligne {line_num}: Erreur - {str(e)}")
     
@@ -528,10 +565,9 @@ def import_transactions_from_file(uploaded_file):
         try:
             current_data = load_data()
             
-            # Convertir la date en objet date
             patient_date = datetime.strptime(patient_data["date"], "%Y-%m-%d").date()
             
-            # Vérifier si le patient existe déjà avec ce numéro et cette date
+            # Vérifier si le patient existe déjà
             existing_patient = None
             for p in current_data.get("patients", []):
                 if p.get("date_jour") == patient_data["date"] and p.get("numero_ordre") == patient_data["numero_ordre"]:
@@ -541,7 +577,6 @@ def import_transactions_from_file(uploaded_file):
             if existing_patient:
                 patient_id = existing_patient["id"]
             else:
-                # Utiliser add_patient avec la date personnalisée
                 new_patient = add_patient(
                     sexe=patient_data["sexe"], 
                     age=patient_data["age"],
@@ -628,19 +663,22 @@ def modal_import_transactions():
         | 2 | Mois | 4 |
         | 3 | Jour | 8 |
         | 4 | Numéro d'ordre patient | 1 |
-        | 5 | Âge (supporte: "30 Ans", "11 mois", "20 ans", "15 ans 3 mois") | 30 Ans |
+        | 5 | Âge (supporte: "30 Ans", "11 mois", "20 ans", "15 ans 3 mois", "2 semaines", "1 semaine", "3 jours") | 30 Ans |
         | 6 | Sexe (F/M, Féminin/Masculin) | F |
         | 7 | Prescripteur | Dr Ndombi |
-        | 8 | Examen | NFS |
+        | 8 | Examens payants | NFS, GE |
         | 9 | Kit de prélèvement | Kit |
+        | 10 | Examens gratuits | CRP, GLYCEMIE |
         """)
         st.info("💡 **Note**: La première ligne peut contenir des en-têtes - elle sera automatiquement ignorée.")
-        st.info("📝 **Format de l'âge**: Supporte '30 Ans', '11 mois', '20 ans', '15 ans 3 mois', etc. Les mois seuls sont convertis à 0 an.")
+        st.info("📝 **Format de l'âge**: Supporte '30 Ans', '11 mois', '20 ans', '15 ans 3 mois', '2 semaines', '1 semaine', '3 jours'. Les semaines/jours/mois seuls sont convertis à 0 an.")
+        st.info("🎁 **Examens gratuits**: Les examens dans la colonne 10 sont automatiquement comptés comme quantité gratuite.")
     
     uploaded_file = st.file_uploader(
         "Choisir un fichier Excel (.xlsx, .xls)",
         type=["xlsx", "xls"],
-        help="Le fichier doit contenir exactement 9 colonnes"
+        key="import_file_uploader",
+        help="Le fichier doit contenir exactement 10 colonnes"
     )
     
     if uploaded_file is not None:
@@ -652,43 +690,118 @@ def modal_import_transactions():
         except Exception as e:
             st.error(f"Impossible de lire l'aperçu: {str(e)}")
         
-        if st.button("🚀 Lancer l'importation", type="primary", use_container_width=True):
-            with st.spinner("Importation en cours..."):
-                success, result = import_transactions_from_file(uploaded_file)
+        # Variables de session pour stocker l'état de l'importation
+        if "import_pending" not in st.session_state:
+            st.session_state.import_pending = False
+        if "import_stats" not in st.session_state:
+            st.session_state.import_stats = None
+        if "import_file" not in st.session_state:
+            st.session_state.import_file = None
+        
+        # Bouton pour analyser/lancer l'importation
+        if not st.session_state.import_pending:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("❌ Annuler", key="btn_cancel_import", type="secondary", use_container_width=True):
+                    st.session_state.import_pending = False
+                    st.session_state.import_stats = None
+                    st.session_state.import_file = None
+                    st.rerun()
+            with col2:
+                if st.button("📥 Lancer l'importation", key="btn_start_import", type="primary", use_container_width=True):
+                    with st.spinner("Analyse et préparation de l'importation..."):
+                        success, result = import_transactions_from_file(uploaded_file)
+                        if success:
+                            st.session_state.import_pending = True
+                            st.session_state.import_stats = result
+                            st.session_state.import_file = uploaded_file
+                            st.rerun()
+                        else:
+                            st.error(f"❌ Erreur: {result}")
+        else:
+            # Afficher les résultats de l'analyse
+            stats = st.session_state.import_stats
+            
+            if stats:
+                st.markdown("### 📊 Aperçu des données à importer")
                 
-                if success:
-                    st.success("✅ Importation terminée avec succès!")
+                # Afficher les statistiques
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("📄 Lignes traitées", stats["total"])
+                with col2:
+                    st.metric("👥 Patients à créer", stats["success"])
+                with col3:
+                    st.metric("📋 Transactions", stats["transactions_created"])
+                with col4:
+                    st.metric("👤 Prescripteurs", stats["prescripteurs_created"])
+                
+                # Afficher le tableau des données
+                if stats["preview_data"]:
+                    df_preview_data = pd.DataFrame(stats["preview_data"])
+                    st.dataframe(df_preview_data, use_container_width=True)
+                
+                # Afficher les avertissements
+                if stats["warnings"]:
+                    with st.expander(f"⚠️ {len(stats['warnings'])} avertissement(s)"):
+                        for warning in stats["warnings"]:
+                            st.warning(warning)
+                
+                # Afficher les erreurs
+                if stats["errors"]:
+                    with st.expander(f"❌ {len(stats['errors'])} erreur(s)"):
+                        for error in stats["errors"]:
+                            st.error(error)
+                    st.error("❌ Des erreurs ont été détectées. Veuillez corriger le fichier avant d'importer.")
                     
-                    # Afficher les statistiques
-                    st.markdown("### 📊 Résultats de l'importation")
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("📄 Lignes traitées", result["total"])
-                    with col2:
-                        st.metric("👥 Patients créés", result["patients_created"])
-                    with col3:
-                        st.metric("📋 Transactions créées", result["transactions_created"])
-                    
-                    if result["warnings"]:
-                        st.warning(f"⚠️ {len(result['warnings'])} avertissement(s)")
-                        with st.expander("Voir les avertissements"):
-                            for warning in result["warnings"]:
-                                st.warning(warning)
-                    
-                    if result["errors"]:
-                        st.error(f"❌ {len(result['errors'])} erreur(s) rencontrée(s)")
-                        with st.expander("Voir les détails des erreurs"):
-                            for error in result["errors"]:
-                                st.error(error)
-                    
-                    st.markdown("---")
-                    if st.button("Fermer", use_container_width=True):
+                    # Bouton pour réinitialiser
+                    if st.button("🔄 Réinitialiser", key="btn_reset_import", use_container_width=True):
+                        st.session_state.import_pending = False
+                        st.session_state.import_stats = None
+                        st.session_state.import_file = None
                         st.rerun()
                 else:
-                    st.error(f"❌ Erreur lors de l'importation: {result}")
+                    st.success("✅ Aucune erreur détectée. Le fichier est prêt à être importé.")
+                    
+                    st.markdown("---")
+                    st.markdown("### ⚠️ Confirmation d'importation")
+                    st.warning("⚠️ Attention: Cette action est irréversible. Une fois confirmée, les données seront définitivement ajoutées à la base.")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button("❌ Annuler", key="btn_cancel_final", type="secondary", use_container_width=True):
+                            st.session_state.import_pending = False
+                            st.session_state.import_stats = None
+                            st.session_state.import_file = None
+                            st.rerun()
+                    with col2:
+                        if st.button("✅ Valider l'importation", key="btn_confirm_final", type="primary", use_container_width=True):
+                            # Les données sont déjà sauvegardées dans import_transactions_from_file
+                            st.success("✅ Importation terminée avec succès!")
+                            
+                            # Afficher les résultats finaux
+                            st.markdown("### 📊 Résultats finaux")
+                            col_a, col_b, col_c = st.columns(3)
+                            with col_a:
+                                st.metric("👥 Patients créés", stats["patients_created"])
+                            with col_b:
+                                st.metric("📋 Transactions créées", stats["transactions_created"])
+                            with col_c:
+                                st.metric("👤 Prescripteurs créés", stats["prescripteurs_created"])
+                            
+                            st.markdown("---")
+                            if st.button("Fermer", key="btn_close_final", use_container_width=True):
+                                # Nettoyer et fermer
+                                st.session_state.import_pending = False
+                                st.session_state.import_stats = None
+                                st.session_state.import_file = None
+                                st.rerun()
     
     st.markdown("---")
-    if st.button("❌ Annuler", use_container_width=True):
+    if st.button("❌ Fermer", key="btn_close_modal", use_container_width=True):
+        st.session_state.import_pending = False
+        st.session_state.import_stats = None
+        st.session_state.import_file = None
         st.rerun()
 
 @st.dialog("⚠️ Supprimer toutes les données importées")
@@ -712,10 +825,10 @@ def modal_delete_imported_data():
     
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("❌ Annuler", use_container_width=True):
+        if st.button("❌ Annuler", key="btn_cancel_delete", use_container_width=True):
             st.rerun()
     with col2:
-        if st.button("✅ Confirmer la suppression", type="primary", use_container_width=True):
+        if st.button("✅ Confirmer la suppression", key="btn_confirm_delete", type="primary", use_container_width=True):
             deleted_patients, deleted_transactions = delete_all_imported_data()
             st.success(f"✅ {deleted_patients} patient(s) et {deleted_transactions} transaction(s) supprimés avec succès!")
             time.sleep(1.5)
@@ -749,6 +862,12 @@ def show():
         st.session_state.custom_date = datetime.now().date()
     if "use_custom_date" not in st.session_state:
         st.session_state.use_custom_date = False
+    if "import_pending" not in st.session_state:
+        st.session_state.import_pending = False
+    if "import_stats" not in st.session_state:
+        st.session_state.import_stats = None
+    if "import_file" not in st.session_state:
+        st.session_state.import_file = None
     
     # --- HEADER SECTION ---
     st.markdown('<div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px;">', unsafe_allow_html=True)
@@ -764,7 +883,7 @@ def show():
     with c2:
         st.markdown("<br>", unsafe_allow_html=True)
         if not st.session_state.wizard_active:
-            if st.button("➕ Nouveau Patient", type="primary", use_container_width=True):
+            if st.button("➕ Nouveau Patient", key="btn_new_patient", type="primary", use_container_width=True):
                 if not data["prescripteurs"] or not data["examens"] or not data["decades"]:
                     st.error("Veuillez configurer les Prescripteurs, Examens et Décades avant de saisir.")
                 else:
@@ -772,20 +891,20 @@ def show():
                     st.session_state.wizard_active = True
                     st.rerun()
         else:
-            if st.button("❌ Annuler la saisie", type="secondary", use_container_width=True):
+            if st.button("❌ Annuler la saisie", key="btn_cancel_wizard", type="secondary", use_container_width=True):
                 reset_wizard()
                 st.rerun()
     with c3:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("📤 Importer Excel", type="secondary", use_container_width=True):
+        if st.button("📤 Importer Excel", key="btn_import_excel", type="secondary", use_container_width=True):
             modal_import_transactions()
     with c4:
         st.markdown("<br>", unsafe_allow_html=True)
         if has_imported_data:
-            if st.button("🗑️ Supprimer imports", type="secondary", use_container_width=True):
+            if st.button("🗑️ Supprimer imports", key="btn_delete_imports", type="secondary", use_container_width=True):
                 modal_delete_imported_data()
         else:
-            st.button("🗑️ Supprimer imports", type="secondary", use_container_width=True, disabled=True, 
+            st.button("🗑️ Supprimer imports", key="btn_delete_imports_disabled", type="secondary", use_container_width=True, disabled=True, 
                      help="Aucune donnée importée à supprimer")
     
     st.markdown('</div>', unsafe_allow_html=True)
@@ -827,6 +946,7 @@ def show():
             use_custom_date = st.checkbox(
                 "📆 Utiliser une date différente", 
                 value=st.session_state.use_custom_date,
+                key="chk_use_custom_date",
                 help="Cochez pour enregistrer des transactions rétroactives (ex: du 1er Avril)"
             )
             st.session_state.use_custom_date = use_custom_date
@@ -836,6 +956,7 @@ def show():
                     "Date de l'enregistrement",
                     value=st.session_state.custom_date,
                     max_value=datetime.now().date(),
+                    key="date_custom",
                     help="Sélectionnez la date à laquelle la transaction a été réellement effectuée"
                 )
                 st.session_state.custom_date = custom_date
@@ -863,10 +984,10 @@ def show():
             
             col1, col2 = st.columns(2)
             with col1:
-                sexe = st.radio("Sexe", ["F", "M"], horizontal=True, 
+                sexe = st.radio("Sexe", ["F", "M"], key="radio_sexe", horizontal=True, 
                               format_func=lambda x: "Féminin" if x == "F" else "Masculin")
             with col2:
-                age = st.number_input("Âge (années)", min_value=0, max_value=150, value=30, step=1)
+                age = st.number_input("Âge (années)", key="input_age", min_value=0, max_value=150, value=30, step=1)
             
             st.markdown("---")
             
@@ -879,11 +1000,11 @@ def show():
             
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("❌ Annuler", use_container_width=True):
+                if st.button("❌ Annuler", key="btn_cancel_step1", use_container_width=True):
                     reset_wizard()
                     st.rerun()
             with col2:
-                if st.button("Suivant ➡️", type="primary", use_container_width=True):
+                if st.button("Suivant ➡️", key="btn_next_step1", type="primary", use_container_width=True):
                     if age >= 0:
                         # Stocker la date personnalisée dans temp_patient
                         st.session_state.temp_patient = {
@@ -922,11 +1043,11 @@ def show():
                 st.error(f"⚠️ Aucune décade trouvée pour la date {patient_date}. Veuillez générer les décades.")
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("Gérer les décades", use_container_width=True):
+                    if st.button("Gérer les décades", key="btn_manage_decades", use_container_width=True):
                         reset_wizard()
                         st.switch_page("pages/decades_page.py")
                 with col2:
-                    if st.button("❌ Annuler", use_container_width=True):
+                    if st.button("❌ Annuler", key="btn_cancel_step2", use_container_width=True):
                         reset_wizard()
                         st.rerun()
                 return
@@ -941,11 +1062,11 @@ def show():
                 st.error("Aucun prescripteur disponible.")
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("Gérer les prescripteurs", use_container_width=True):
+                    if st.button("Gérer les prescripteurs", key="btn_manage_prescripteurs", use_container_width=True):
                         reset_wizard()
                         st.switch_page("pages/prescripteurs_page.py")
                 with col2:
-                    if st.button("❌ Annuler", use_container_width=True):
+                    if st.button("❌ Annuler", key="btn_cancel_no_pres", use_container_width=True):
                         reset_wizard()
                         st.rerun()
                 return
@@ -976,11 +1097,11 @@ def show():
                         st.error("Aucun examen disponible.")
                         col1, col2 = st.columns(2)
                         with col1:
-                            if st.button("Gérer les examens", use_container_width=True):
+                            if st.button("Gérer les examens", key="btn_manage_examens", use_container_width=True):
                                 reset_wizard()
                                 st.switch_page("pages/examens_page.py")
                         with col2:
-                            if st.button("❌ Annuler", use_container_width=True):
+                            if st.button("❌ Annuler", key="btn_cancel_no_exam", use_container_width=True):
                                 reset_wizard()
                                 st.rerun()
                         return
@@ -999,7 +1120,7 @@ def show():
                     q_gratuite = st.number_input("Quantité GRATUITE", min_value=0, value=0, step=1, key="q_gratuite")
                 
                 # Bouton Ajouter - reste dans le formulaire
-                if st.button("🛒 Ajouter au panier", type="secondary", use_container_width=True):
+                if st.button("🛒 Ajouter au panier", key="btn_add_to_cart", type="secondary", use_container_width=True):
                     if q_payee == 0 and q_gratuite == 0:
                         st.error("Veuillez saisir au moins une quantité")
                     else:
@@ -1045,13 +1166,13 @@ def show():
                                                  f"{st.session_state.temp_examens[x]['quantite_gratuite']} gratuit)",
                             key="delete_select"
                         )
-                        if st.button("🗑️ Supprimer cet examen", use_container_width=True):
+                        if st.button("🗑️ Supprimer cet examen", key="btn_delete_exam", use_container_width=True):
                             del st.session_state.temp_examens[item_to_delete]
                             st.toast("Examen retiré du panier", icon="🗑️")
                             st.rerun()
                 
                 with col_del2:
-                    if st.button("⚠️ Vider tout le panier", type="secondary", use_container_width=True):
+                    if st.button("⚠️ Vider tout le panier", key="btn_clear_cart", type="secondary", use_container_width=True):
                         st.session_state.temp_examens = []
                         st.toast("Panier vidé", icon="⚠️")
                         st.rerun()
@@ -1063,22 +1184,22 @@ def show():
             # Boutons de navigation
             col1, col2, col3, col4 = st.columns(4)
             with col1:
-                if st.button("⬅️ Retour patient", use_container_width=True):
+                if st.button("⬅️ Retour patient", key="btn_back_patient", use_container_width=True):
                     st.session_state.wizard_step = 1
                     st.rerun()
             
             with col2:
-                if st.button("🔄 Nouveau patient", use_container_width=True):
+                if st.button("🔄 Nouveau patient", key="btn_new_patient_wizard", use_container_width=True):
                     reset_wizard()
                     st.rerun()
             
             with col3:
-                if st.button("❌ Annuler", use_container_width=True):
+                if st.button("❌ Annuler", key="btn_cancel_wizard2", use_container_width=True):
                     reset_wizard()
                     st.rerun()
             
             with col4:
-                if st.button("✅ ENREGISTRER", type="primary", use_container_width=True, 
+                if st.button("✅ ENREGISTRER", key="btn_save_transaction", type="primary", use_container_width=True, 
                             disabled=len(st.session_state.temp_examens) == 0):
                     if not st.session_state.temp_examens:
                         st.error("Veuillez ajouter au moins un examen")
@@ -1118,12 +1239,12 @@ def show():
                         
                         col_next1, col_next2 = st.columns(2)
                         with col_next1:
-                            if st.button("🔄 Nouveau patient", use_container_width=True, type="primary"):
+                            if st.button("🔄 Nouveau patient", key="btn_next_new_patient", use_container_width=True, type="primary"):
                                 reset_wizard()
                                 st.rerun()
                         
                         with col_next2:
-                            if st.button("📊 Voir l'historique", use_container_width=True):
+                            if st.button("📊 Voir l'historique", key="btn_view_history", use_container_width=True):
                                 reset_wizard()
                                 st.rerun()
         
@@ -1175,11 +1296,9 @@ def show():
     if transactions_by_patient:
         col_search, col_filter = st.columns([3, 1])
         with col_search:
-            search = st.text_input("🔍 Rechercher", placeholder="Numéro patient, nom prescripteur ou examen...", label_visibility="collapsed")
+            search = st.text_input("🔍 Rechercher", key="search_input", placeholder="Numéro patient, nom prescripteur ou examen...", label_visibility="collapsed")
         with col_filter:
-            filter_date = st.selectbox("Filtrer par période", 
-                                      ["Tous", "Aujourd'hui", "Cette semaine", "Ce mois"], 
-                                      label_visibility="collapsed")
+            filter_date = st.selectbox("Filtrer par période", ["Tous", "Aujourd'hui", "Cette semaine", "Ce mois"], key="filter_date", label_visibility="collapsed")
         
         sorted_patients = sorted(patients_dict.items(), 
                                 key=lambda x: x[1].get("date_enregistrement", ""), 
