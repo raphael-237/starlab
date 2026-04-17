@@ -845,7 +845,7 @@
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:51"
+            "date_enregistrement": "2026-04-17 13:01:57"
         },
         {
             "id": 2,
@@ -856,7 +856,7 @@
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:51"
+            "date_enregistrement": "2026-04-17 13:01:57"
         },
         {
             "id": 3,
@@ -867,7 +867,7 @@
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:51"
+            "date_enregistrement": "2026-04-17 13:01:57"
         },
         {
             "id": 4,
@@ -878,7 +878,7 @@
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:51"
+            "date_enregistrement": "2026-04-17 13:01:57"
         },
         {
             "id": 5,
@@ -889,10 +889,21 @@
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:57"
         },
         {
             "id": 6,
+            "group_id": 5,
+            "patient_id": 2,
+            "prescripteur_id": 20,
+            "examen_id": 1,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 10,
+            "date_enregistrement": "2026-04-17 13:01:57"
+        },
+        {
+            "id": 7,
             "group_id": 5,
             "patient_id": 2,
             "prescripteur_id": 20,
@@ -900,458 +911,986 @@
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:57"
         },
         {
-            "id": 7,
-            "group_id": 7,
+            "id": 8,
+            "group_id": 8,
             "patient_id": 3,
             "prescripteur_id": 20,
             "examen_id": 34,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:58"
         },
         {
-            "id": 8,
-            "group_id": 7,
+            "id": 9,
+            "group_id": 8,
             "patient_id": 3,
             "prescripteur_id": 20,
             "examen_id": 37,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:58"
         },
         {
-            "id": 9,
-            "group_id": 9,
+            "id": 10,
+            "group_id": 10,
             "patient_id": 4,
             "prescripteur_id": 30,
             "examen_id": 10,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:58"
         },
         {
-            "id": 10,
-            "group_id": 9,
+            "id": 11,
+            "group_id": 10,
             "patient_id": 4,
             "prescripteur_id": 30,
             "examen_id": 1,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:58"
         },
         {
-            "id": 11,
-            "group_id": 9,
+            "id": 12,
+            "group_id": 10,
             "patient_id": 4,
             "prescripteur_id": 30,
             "examen_id": 14,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:58"
         },
         {
-            "id": 12,
-            "group_id": 9,
+            "id": 13,
+            "group_id": 10,
             "patient_id": 4,
             "prescripteur_id": 30,
             "examen_id": 14,
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:58"
         },
         {
-            "id": 13,
-            "group_id": 9,
+            "id": 14,
+            "group_id": 10,
             "patient_id": 4,
             "prescripteur_id": 30,
             "examen_id": 37,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:58"
         },
         {
-            "id": 14,
-            "group_id": 14,
+            "id": 15,
+            "group_id": 15,
             "patient_id": 5,
             "prescripteur_id": 20,
             "examen_id": 36,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 15,
-            "group_id": 14,
+            "id": 16,
+            "group_id": 15,
             "patient_id": 5,
             "prescripteur_id": 20,
             "examen_id": 14,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 16,
-            "group_id": 14,
+            "id": 17,
+            "group_id": 15,
             "patient_id": 5,
             "prescripteur_id": 20,
             "examen_id": 6,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 17,
-            "group_id": 14,
+            "id": 18,
+            "group_id": 15,
             "patient_id": 5,
             "prescripteur_id": 20,
             "examen_id": 36,
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 18,
-            "group_id": 14,
+            "id": 19,
+            "group_id": 15,
             "patient_id": 5,
             "prescripteur_id": 20,
             "examen_id": 37,
             "quantite_payee": 10,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 19,
-            "group_id": 19,
+            "id": 20,
+            "group_id": 20,
             "patient_id": 6,
             "prescripteur_id": 31,
             "examen_id": 10,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 20,
-            "group_id": 19,
+            "id": 21,
+            "group_id": 20,
             "patient_id": 6,
             "prescripteur_id": 31,
             "examen_id": 12,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 21,
-            "group_id": 19,
+            "id": 22,
+            "group_id": 20,
             "patient_id": 6,
             "prescripteur_id": 31,
             "examen_id": 18,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 22,
-            "group_id": 19,
+            "id": 23,
+            "group_id": 20,
             "patient_id": 6,
             "prescripteur_id": 31,
             "examen_id": 18,
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 23,
-            "group_id": 19,
+            "id": 24,
+            "group_id": 20,
             "patient_id": 6,
             "prescripteur_id": 31,
             "examen_id": 37,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:01:59"
         },
         {
-            "id": 24,
-            "group_id": 24,
+            "id": 25,
+            "group_id": 25,
             "patient_id": 7,
             "prescripteur_id": 21,
             "examen_id": 4,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 25,
-            "group_id": 24,
+            "id": 26,
+            "group_id": 25,
             "patient_id": 7,
             "prescripteur_id": 21,
             "examen_id": 5,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 26,
-            "group_id": 24,
+            "id": 27,
+            "group_id": 25,
             "patient_id": 7,
             "prescripteur_id": 21,
             "examen_id": 30,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 27,
-            "group_id": 24,
+            "id": 28,
+            "group_id": 25,
             "patient_id": 7,
             "prescripteur_id": 21,
             "examen_id": 15,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 28,
-            "group_id": 24,
+            "id": 29,
+            "group_id": 25,
             "patient_id": 7,
             "prescripteur_id": 21,
             "examen_id": 4,
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 29,
-            "group_id": 24,
+            "id": 30,
+            "group_id": 25,
             "patient_id": 7,
             "prescripteur_id": 21,
             "examen_id": 37,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 10,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 30,
-            "group_id": 30,
+            "id": 31,
+            "group_id": 31,
             "patient_id": 8,
             "prescripteur_id": 3,
             "examen_id": 33,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 31,
-            "group_id": 30,
+            "id": 32,
+            "group_id": 31,
             "patient_id": 8,
             "prescripteur_id": 3,
             "examen_id": 31,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 32,
-            "group_id": 30,
+            "id": 33,
+            "group_id": 31,
             "patient_id": 8,
             "prescripteur_id": 3,
             "examen_id": 3,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 33,
-            "group_id": 30,
+            "id": 34,
+            "group_id": 31,
             "patient_id": 8,
             "prescripteur_id": 3,
             "examen_id": 8,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 34,
-            "group_id": 30,
+            "id": 35,
+            "group_id": 31,
             "patient_id": 8,
             "prescripteur_id": 3,
             "examen_id": 8,
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 35,
-            "group_id": 30,
+            "id": 36,
+            "group_id": 31,
             "patient_id": 8,
             "prescripteur_id": 3,
             "examen_id": 37,
             "quantite_payee": 2,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:52"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 36,
-            "group_id": 36,
+            "id": 37,
+            "group_id": 37,
             "patient_id": 9,
             "prescripteur_id": 47,
             "examen_id": 10,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 37,
-            "group_id": 36,
+            "id": 38,
+            "group_id": 37,
             "patient_id": 9,
             "prescripteur_id": 47,
             "examen_id": 12,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 38,
-            "group_id": 36,
+            "id": 39,
+            "group_id": 37,
             "patient_id": 9,
             "prescripteur_id": 47,
             "examen_id": 18,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 39,
-            "group_id": 36,
+            "id": 40,
+            "group_id": 37,
             "patient_id": 9,
             "prescripteur_id": 47,
             "examen_id": 14,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 40,
-            "group_id": 36,
+            "id": 41,
+            "group_id": 37,
             "patient_id": 9,
             "prescripteur_id": 47,
             "examen_id": 14,
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 41,
-            "group_id": 36,
+            "id": 42,
+            "group_id": 37,
             "patient_id": 9,
             "prescripteur_id": 47,
             "examen_id": 37,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 42,
-            "group_id": 42,
+            "id": 43,
+            "group_id": 43,
             "patient_id": 10,
             "prescripteur_id": 25,
             "examen_id": 4,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 43,
-            "group_id": 42,
+            "id": 44,
+            "group_id": 43,
             "patient_id": 10,
             "prescripteur_id": 25,
             "examen_id": 5,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 44,
-            "group_id": 42,
+            "id": 45,
+            "group_id": 43,
             "patient_id": 10,
             "prescripteur_id": 25,
             "examen_id": 30,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 45,
-            "group_id": 42,
+            "id": 46,
+            "group_id": 43,
             "patient_id": 10,
             "prescripteur_id": 25,
             "examen_id": 15,
             "quantite_payee": 1,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 46,
-            "group_id": 42,
+            "id": 47,
+            "group_id": 43,
             "patient_id": 10,
             "prescripteur_id": 25,
             "examen_id": 15,
             "quantite_payee": 0,
             "quantite_gratuite": 1,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
         },
         {
-            "id": 47,
-            "group_id": 42,
+            "id": 48,
+            "group_id": 43,
             "patient_id": 10,
             "prescripteur_id": 25,
             "examen_id": 37,
             "quantite_payee": 5,
             "quantite_gratuite": 0,
             "decade_id": 11,
-            "date_enregistrement": "2026-04-15 19:17:53"
+            "date_enregistrement": "2026-04-17 13:02:00"
+        },
+        {
+            "id": 49,
+            "group_id": 49,
+            "patient_id": 11,
+            "prescripteur_id": 20,
+            "examen_id": 10,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 50,
+            "group_id": 49,
+            "patient_id": 11,
+            "prescripteur_id": 20,
+            "examen_id": 13,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 51,
+            "group_id": 49,
+            "patient_id": 11,
+            "prescripteur_id": 20,
+            "examen_id": 10,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 52,
+            "group_id": 49,
+            "patient_id": 11,
+            "prescripteur_id": 20,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 53,
+            "group_id": 53,
+            "patient_id": 12,
+            "prescripteur_id": 20,
+            "examen_id": 12,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 54,
+            "group_id": 53,
+            "patient_id": 12,
+            "prescripteur_id": 20,
+            "examen_id": 1,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 55,
+            "group_id": 53,
+            "patient_id": 12,
+            "prescripteur_id": 20,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 56,
+            "group_id": 56,
+            "patient_id": 13,
+            "prescripteur_id": 20,
+            "examen_id": 34,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 57,
+            "group_id": 56,
+            "patient_id": 13,
+            "prescripteur_id": 20,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 58,
+            "group_id": 58,
+            "patient_id": 14,
+            "prescripteur_id": 30,
+            "examen_id": 10,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 59,
+            "group_id": 58,
+            "patient_id": 14,
+            "prescripteur_id": 30,
+            "examen_id": 1,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 60,
+            "group_id": 58,
+            "patient_id": 14,
+            "prescripteur_id": 30,
+            "examen_id": 14,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 61,
+            "group_id": 58,
+            "patient_id": 14,
+            "prescripteur_id": 30,
+            "examen_id": 14,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 62,
+            "group_id": 58,
+            "patient_id": 14,
+            "prescripteur_id": 30,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 63,
+            "group_id": 63,
+            "patient_id": 15,
+            "prescripteur_id": 20,
+            "examen_id": 36,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 64,
+            "group_id": 63,
+            "patient_id": 15,
+            "prescripteur_id": 20,
+            "examen_id": 14,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 65,
+            "group_id": 63,
+            "patient_id": 15,
+            "prescripteur_id": 20,
+            "examen_id": 6,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 66,
+            "group_id": 63,
+            "patient_id": 15,
+            "prescripteur_id": 20,
+            "examen_id": 36,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 67,
+            "group_id": 63,
+            "patient_id": 15,
+            "prescripteur_id": 20,
+            "examen_id": 37,
+            "quantite_payee": 10,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:47"
+        },
+        {
+            "id": 68,
+            "group_id": 68,
+            "patient_id": 16,
+            "prescripteur_id": 31,
+            "examen_id": 10,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 69,
+            "group_id": 68,
+            "patient_id": 16,
+            "prescripteur_id": 31,
+            "examen_id": 12,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 70,
+            "group_id": 68,
+            "patient_id": 16,
+            "prescripteur_id": 31,
+            "examen_id": 18,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 71,
+            "group_id": 68,
+            "patient_id": 16,
+            "prescripteur_id": 31,
+            "examen_id": 18,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 72,
+            "group_id": 68,
+            "patient_id": 16,
+            "prescripteur_id": 31,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 73,
+            "group_id": 73,
+            "patient_id": 17,
+            "prescripteur_id": 21,
+            "examen_id": 4,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 74,
+            "group_id": 73,
+            "patient_id": 17,
+            "prescripteur_id": 21,
+            "examen_id": 5,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 75,
+            "group_id": 73,
+            "patient_id": 17,
+            "prescripteur_id": 21,
+            "examen_id": 30,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 76,
+            "group_id": 73,
+            "patient_id": 17,
+            "prescripteur_id": 21,
+            "examen_id": 15,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 77,
+            "group_id": 73,
+            "patient_id": 17,
+            "prescripteur_id": 21,
+            "examen_id": 4,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 78,
+            "group_id": 73,
+            "patient_id": 17,
+            "prescripteur_id": 21,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 79,
+            "group_id": 79,
+            "patient_id": 18,
+            "prescripteur_id": 3,
+            "examen_id": 33,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 80,
+            "group_id": 79,
+            "patient_id": 18,
+            "prescripteur_id": 3,
+            "examen_id": 31,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 81,
+            "group_id": 79,
+            "patient_id": 18,
+            "prescripteur_id": 3,
+            "examen_id": 3,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 82,
+            "group_id": 79,
+            "patient_id": 18,
+            "prescripteur_id": 3,
+            "examen_id": 8,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 83,
+            "group_id": 79,
+            "patient_id": 18,
+            "prescripteur_id": 3,
+            "examen_id": 8,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 84,
+            "group_id": 79,
+            "patient_id": 18,
+            "prescripteur_id": 3,
+            "examen_id": 37,
+            "quantite_payee": 2,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 85,
+            "group_id": 85,
+            "patient_id": 19,
+            "prescripteur_id": 47,
+            "examen_id": 10,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 86,
+            "group_id": 85,
+            "patient_id": 19,
+            "prescripteur_id": 47,
+            "examen_id": 12,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 87,
+            "group_id": 85,
+            "patient_id": 19,
+            "prescripteur_id": 47,
+            "examen_id": 18,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 88,
+            "group_id": 85,
+            "patient_id": 19,
+            "prescripteur_id": 47,
+            "examen_id": 14,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 89,
+            "group_id": 85,
+            "patient_id": 19,
+            "prescripteur_id": 47,
+            "examen_id": 14,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 90,
+            "group_id": 85,
+            "patient_id": 19,
+            "prescripteur_id": 47,
+            "examen_id": 37,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 91,
+            "group_id": 91,
+            "patient_id": 20,
+            "prescripteur_id": 25,
+            "examen_id": 4,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 92,
+            "group_id": 91,
+            "patient_id": 20,
+            "prescripteur_id": 25,
+            "examen_id": 5,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 93,
+            "group_id": 91,
+            "patient_id": 20,
+            "prescripteur_id": 25,
+            "examen_id": 30,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 94,
+            "group_id": 91,
+            "patient_id": 20,
+            "prescripteur_id": 25,
+            "examen_id": 15,
+            "quantite_payee": 1,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 95,
+            "group_id": 91,
+            "patient_id": 20,
+            "prescripteur_id": 25,
+            "examen_id": 15,
+            "quantite_payee": 0,
+            "quantite_gratuite": 1,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
+        },
+        {
+            "id": 96,
+            "group_id": 91,
+            "patient_id": 20,
+            "prescripteur_id": 25,
+            "examen_id": 37,
+            "quantite_payee": 5,
+            "quantite_gratuite": 0,
+            "decade_id": 11,
+            "date_enregistrement": "2026-04-17 13:03:48"
         }
     ],
     "patients": [
@@ -1443,6 +1982,96 @@
             "age": 31,
             "date_enregistrement": "2026-04-14 00:00:00",
             "date_jour": "2026-04-14",
+            "is_imported": false
+        },
+        {
+            "id": 11,
+            "numero_ordre": 1,
+            "sexe": "F",
+            "age": 40,
+            "date_enregistrement": "2026-04-12 00:00:00",
+            "date_jour": "2026-04-12",
+            "is_imported": false
+        },
+        {
+            "id": 12,
+            "numero_ordre": 2,
+            "sexe": "M",
+            "age": 27,
+            "date_enregistrement": "2026-04-12 00:00:00",
+            "date_jour": "2026-04-12",
+            "is_imported": false
+        },
+        {
+            "id": 13,
+            "numero_ordre": 3,
+            "sexe": "F",
+            "age": 22,
+            "date_enregistrement": "2026-04-12 00:00:00",
+            "date_jour": "2026-04-12",
+            "is_imported": false
+        },
+        {
+            "id": 14,
+            "numero_ordre": 1,
+            "sexe": "F",
+            "age": 40,
+            "date_enregistrement": "2026-04-13 00:00:00",
+            "date_jour": "2026-04-13",
+            "is_imported": false
+        },
+        {
+            "id": 15,
+            "numero_ordre": 2,
+            "sexe": "M",
+            "age": 58,
+            "date_enregistrement": "2026-04-13 00:00:00",
+            "date_jour": "2026-04-13",
+            "is_imported": false
+        },
+        {
+            "id": 16,
+            "numero_ordre": 3,
+            "sexe": "M",
+            "age": 10,
+            "date_enregistrement": "2026-04-13 00:00:00",
+            "date_jour": "2026-04-13",
+            "is_imported": false
+        },
+        {
+            "id": 17,
+            "numero_ordre": 4,
+            "sexe": "F",
+            "age": 31,
+            "date_enregistrement": "2026-04-13 00:00:00",
+            "date_jour": "2026-04-13",
+            "is_imported": false
+        },
+        {
+            "id": 18,
+            "numero_ordre": 1,
+            "sexe": "M",
+            "age": 58,
+            "date_enregistrement": "2026-04-15 00:00:00",
+            "date_jour": "2026-04-15",
+            "is_imported": false
+        },
+        {
+            "id": 19,
+            "numero_ordre": 2,
+            "sexe": "M",
+            "age": 0,
+            "date_enregistrement": "2026-04-15 00:00:00",
+            "date_jour": "2026-04-15",
+            "is_imported": false
+        },
+        {
+            "id": 20,
+            "numero_ordre": 3,
+            "sexe": "F",
+            "age": 31,
+            "date_enregistrement": "2026-04-15 00:00:00",
+            "date_jour": "2026-04-15",
             "is_imported": false
         }
     ]

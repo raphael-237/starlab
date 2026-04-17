@@ -563,6 +563,29 @@ def delete_all_imported_data():
     
     return deleted_patients, deleted_transactions
 
+def delete_all_data():
+    """
+    Supprime TOUTES les données des patients et des transactions
+    """
+    data = load_data()
+    
+    # Compter les éléments avant suppression
+    patients_count = len(data.get("patients", []))
+    transactions_count = len(data["transactions"])
+    
+    # Vider les listes
+    data["patients"] = []
+    data["transactions"] = []
+    
+    # Réinitialiser aussi les IDs importés dans la session
+    if "imported_data_ids" in st.session_state:
+        st.session_state.imported_data_ids = {"patients": [], "transactions": []}
+    
+    # Sauvegarder les modifications
+    save_data(data)
+    
+    return patients_count, transactions_count
+
 @st.dialog("📤 Importer des transactions")
 def modal_import_transactions():
     """
@@ -672,6 +695,44 @@ def modal_delete_imported_data():
             time.sleep(1.5)
             st.rerun()
 
+@st.dialog("⚠️⚠️ VIDER COMPLÈTEMENT LA BASE DE DONNÉES ⚠️⚠️")
+def modal_delete_all_data():
+    """
+    Fenêtre modale de confirmation pour vider TOUTE la base de données
+    """
+    st.error("🔴 **ATTENTION - ACTION IRRÉVERSIBLE** 🔴")
+    st.markdown("Vous êtes sur le point de supprimer **TOUS** les patients et **TOUTES** les transactions.")
+    st.markdown("Cette action est définitive et ne peut pas être annulée.")
+    
+    data = load_data()
+    patients_count = len(data.get("patients", []))
+    transactions_count = len(data["transactions"])
+    
+    if patients_count > 0 or transactions_count > 0:
+        st.warning(f"📊 **Données concernées :** {patients_count} patient(s) et {transactions_count} transaction(s)")
+    else:
+        st.info("📊 La base de données est déjà vide.")
+    
+    st.markdown("---")
+    st.markdown("Pour confirmer, tapez **VIDER** dans le champ ci-dessous :")
+    
+    confirmation = st.text_input("Confirmation", key="delete_all_confirmation", placeholder="Tapez VIDER ici")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("❌ Annuler", key="btn_cancel_delete_all", use_container_width=True):
+            st.rerun()
+    with col2:
+        if st.button("🔴 CONFIRMER LA SUPPRESSION TOTALE 🔴", key="btn_confirm_delete_all", type="primary", use_container_width=True):
+            if confirmation == "VIDER":
+                deleted_patients, deleted_transactions = delete_all_data()
+                st.success(f"✅ **SUPPRESSION TOTALE EFFECTUÉE** : {deleted_patients} patient(s) et {deleted_transactions} transaction(s) supprimés!")
+                st.balloons()
+                time.sleep(2)
+                st.rerun()
+            else:
+                st.error("❌ Confirmation incorrecte. Tapez exactement 'VIDER' pour confirmer.")
+
 def show():
     """
     Point d'entrée pour l'affichage de la page de saisie et d'historique des transactions
@@ -704,7 +765,7 @@ def show():
     imported_patients_count = len(st.session_state.imported_data_ids.get("patients", []))
     has_imported_data = imported_patients_count > 0
     
-    c1, c2, c3, c4 = st.columns([2, 1, 1, 1])
+    c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1])
     with c1:
         st.title("💰 Transactions Patient")
         st.caption("Enregistrez les prestations par patient et gérez l'historique financier")
@@ -734,6 +795,11 @@ def show():
         else:
             st.button("🗑️ Supprimer imports", key="btn_delete_imports_disabled", type="secondary", use_container_width=True, disabled=True, 
                      help="Aucune donnée importée à supprimer")
+    with c5:
+        st.markdown("<br>", unsafe_allow_html=True)
+        # Bouton toujours actif pour vider toute la base
+        if st.button("🔴 VIDER LA BASE 🔴", key="btn_delete_all_data", type="secondary", use_container_width=True):
+            modal_delete_all_data()
     
     st.markdown('</div>', unsafe_allow_html=True)
     
