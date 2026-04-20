@@ -136,9 +136,34 @@ def find_data_rows(df, start_row=0):
             data_rows.append(idx)
     return data_rows
 
+def parse_exam_with_discount(exam_string):
+    """
+    Parse un examen qui peut contenir un pourcentage de réduction
+    Format possible: "30% NFS" ou "NFS" ou "20%GE" ou "15 % CRP"
+    Retourne: (exam_name, discount_percent)
+    """
+    if not exam_string:
+        return None, 0
+    
+    exam_string = str(exam_string).strip()
+    
+    # Pattern pour détecter un pourcentage devant l'examen
+    # Exemples: "30% NFS", "20%GE", "15 % CRP", "12.5% Glycemie"
+    pattern = r'^(\d+(?:[.,]\d+)?)\s*%\s*(.+)$'
+    match = re.match(pattern, exam_string)
+    
+    if match:
+        discount_str = match.group(1).replace(',', '.')
+        discount_percent = float(discount_str)
+        exam_name = match.group(2).strip()
+        return exam_name, discount_percent
+    
+    # Pas de réduction
+    return exam_string, 0
+
 def import_transactions_from_file(uploaded_file):
     """
-    Importe les transactions depuis un fichier Excel
+    Importe les transactions depuis un fichier Excel avec gestion des réductions
     """
     from modules.data_manager import get_next_id
     
@@ -303,6 +328,33 @@ def import_transactions_from_file(uploaded_file):
                     return exam_data["id"], exam_data["prix"]
         return None, None
     
+    def find_matching_exam_with_discount(exam_name_with_discount):
+        """
+        Trouve l'examen en tenant compte d'une éventuelle réduction
+        Retourne: (examen_id, prix_apres_reduction, discount_percent, prix_original)
+        """
+        if not exam_name_with_discount:
+            return None, None, 0, None
+        
+        exam_name, discount_percent = parse_exam_with_discount(exam_name_with_discount)
+        
+        if not exam_name:
+            return None, None, 0, None
+        
+        # Trouver l'examen de base
+        examen_id, prix_original = find_matching_exam(exam_name)
+        
+        if examen_id is None:
+            return None, None, 0, None
+        
+        # Appliquer la réduction si nécessaire
+        if discount_percent > 0:
+            prix_final = prix_original * (1 - discount_percent / 100)
+            prix_final = round(prix_final)
+            return examen_id, prix_final, discount_percent, prix_original
+        
+        return examen_id, prix_original, 0, prix_original
+    
     def split_multiple_exams(exam_string):
         if not exam_string:
             return []
@@ -427,39 +479,56 @@ def import_transactions_from_file(uploaded_file):
                 continue
             
             examens_trouves = []
-            for exam_name in exam_list:
-                if not exam_name:
+            
+            # Traitement des examens payants (avec réduction possible)
+            for exam_item in exam_list:
+                if not exam_item:
                     continue
-                examen_id, examen_prix = find_matching_exam(exam_name)
+                
+                examen_id, prix_applique, discount, prix_original = find_matching_exam_with_discount(exam_item)
+                
                 if examen_id is None:
-                    stats["errors"].append(f"Ligne {line_num}: Examen payant '{exam_name}' non trouvé")
+                    stats["errors"].append(f"Ligne {line_num}: Examen payant '{exam_item}' non trouvé")
                 else:
                     examens_trouves.append({
                         "examen_id": examen_id,
                         "quantite_payee": 1,
-                        "quantite_gratuite": 0
+                        "quantite_gratuite": 0,
+                        "prix_unitaire_applique": prix_applique,
+                        "discount_percent": discount
                     })
+                    
+                    if discount > 0:
+                        stats["warnings"].append(f"Ligne {line_num}: Réduction de {discount}% appliquée sur '{exam_item}' (prix original: {prix_original} FCFA → {prix_applique} FCFA)")
             
-            for exam_name in exam_gratuit_list:
-                if not exam_name:
+            # Traitement des examens gratuits (pas de réduction)
+            for exam_item in exam_gratuit_list:
+                if not exam_item:
                     continue
-                examen_id, examen_prix = find_matching_exam(exam_name)
+                
+                # Les examens gratuits n'ont pas de réduction
+                examen_id, prix_original = find_matching_exam(exam_item)
+                
                 if examen_id is None:
-                    stats["errors"].append(f"Ligne {line_num}: Examen gratuit '{exam_name}' non trouvé")
+                    stats["errors"].append(f"Ligne {line_num}: Examen gratuit '{exam_item}' non trouvé")
                 else:
                     examens_trouves.append({
                         "examen_id": examen_id,
                         "quantite_payee": 0,
-                        "quantite_gratuite": 1
+                        "quantite_gratuite": 1,
+                        "prix_unitaire_applique": 0,
+                        "discount_percent": 0
                     })
             
             if kit_quantity > 0:
-                kit_examen_id, _ = find_matching_exam("kit prelevement")
+                kit_examen_id, kit_prix = find_matching_exam("kit prelevement")
                 if kit_examen_id:
                     examens_trouves.append({
                         "examen_id": kit_examen_id,
                         "quantite_payee": kit_quantity,
-                        "quantite_gratuite": 0
+                        "quantite_gratuite": 0,
+                        "prix_unitaire_applique": kit_prix,
+                        "discount_percent": 0
                     })
             
             if not examens_trouves:
@@ -605,11 +674,11 @@ def modal_import_transactions():
         | 5 | Âge | 30 Ans |
         | 6 | Sexe (F/M) | F |
         | 7 | Prescripteur | Dr Ndombi |
-        | 8 | Examens payants | NFS, GE |
+        | 8 | Examens payants | NFS, GE, 20% CRP |
         | 9 | Kit de prélèvement | Kit |
-        | 10 | Examens gratuits | CRP, GLYCEMIE |
+        | 10 | Examens gratuits | GLYCEMIE |
         """)
-        st.info("💡 **Note**: La première ligne peut contenir des en-têtes - elle sera automatiquement ignorée.")
+        st.info("💡 **Note**: Pour appliquer une réduction, mettez le pourcentage devant l'examen (ex: '20% CRP' ou '15% NFS')")
     
     uploaded_file = st.file_uploader(
         "Choisir un fichier Excel (.xlsx, .xls)",
@@ -797,7 +866,6 @@ def show():
                      help="Aucune donnée importée à supprimer")
     with c5:
         st.markdown("<br>", unsafe_allow_html=True)
-        # Bouton toujours actif pour vider toute la base
         if st.button("🔴 VIDER LA BASE 🔴", key="btn_delete_all_data", type="secondary", use_container_width=True):
             modal_delete_all_data()
     
@@ -988,22 +1056,54 @@ def show():
                 
                 with col2:
                     q_payee = st.number_input("Quantité PAYÉE", min_value=0, value=1, step=1, key="q_payee")
+                
                 with col3:
                     q_gratuite = st.number_input("Quantité GRATUITE", min_value=0, value=0, step=1, key="q_gratuite")
+                
+                # Option de réduction
+                st.markdown("**💰 Réduction (optionnelle)**")
+                col_disc1, col_disc2 = st.columns(2)
+                with col_disc1:
+                    apply_discount = st.checkbox("Appliquer une réduction", key="chk_apply_discount")
+                with col_disc2:
+                    discount_percent = 0
+                    if apply_discount:
+                        discount_percent = st.number_input("Pourcentage de réduction (%)", min_value=0, max_value=100, value=0, step=5, key="discount_percent")
                 
                 if st.button("🛒 Ajouter au panier", key="btn_add_to_cart", type="secondary", use_container_width=True):
                     if q_payee == 0 and q_gratuite == 0:
                         st.error("Veuillez saisir au moins une quantité")
                     else:
-                        st.session_state.temp_examens.append({
-                            "examen_id": selected_exam["id"],
-                            "examen_nom": selected_exam["nom"],
-                            "prix": selected_exam["prix"],
-                            "quantite_payee": int(q_payee),
-                            "quantite_gratuite": int(q_gratuite),
-                            "montant": int(q_payee * selected_exam["prix"])
-                        })
-                        st.toast(f"✅ Ajouté : {selected_exam['nom']}", icon="🛒")
+                        prix_original = selected_exam["prix"]
+                        if apply_discount and discount_percent > 0 and q_payee > 0:
+                            prix_final = prix_original * (1 - discount_percent / 100)
+                            prix_final = round(prix_final)
+                            montant = q_payee * prix_final
+                            st.session_state.temp_examens.append({
+                                "examen_id": selected_exam["id"],
+                                "examen_nom": selected_exam["nom"],
+                                "prix_original": prix_original,
+                                "prix_final": prix_final,
+                                "discount_percent": discount_percent,
+                                "quantite_payee": int(q_payee),
+                                "quantite_gratuite": int(q_gratuite),
+                                "montant": montant
+                            })
+                            st.toast(f"✅ Ajouté : {selected_exam['nom']} avec {discount_percent}% de réduction", icon="🏷️")
+                        else:
+                            montant = q_payee * prix_original
+                            st.session_state.temp_examens.append({
+                                "examen_id": selected_exam["id"],
+                                "examen_nom": selected_exam["nom"],
+                                "prix_original": prix_original,
+                                "prix_final": prix_original,
+                                "discount_percent": 0,
+                                "quantite_payee": int(q_payee),
+                                "quantite_gratuite": int(q_gratuite),
+                                "montant": montant
+                            })
+                            st.toast(f"✅ Ajouté : {selected_exam['nom']}", icon="🛒")
+                        
                         st.session_state.last_exam_key += 1
                         time.sleep(0.5)
                         st.rerun()
@@ -1014,8 +1114,8 @@ def show():
                 st.markdown("#### 🛒 Panier des examens")
                 
                 df_panier = pd.DataFrame(st.session_state.temp_examens)
-                df_display = df_panier[["examen_nom", "quantite_payee", "quantite_gratuite", "montant"]]
-                df_display.columns = ["Examen", "Payé", "Gratuit", "Montant (FCFA)"]
+                df_display = df_panier[["examen_nom", "quantite_payee", "quantite_gratuite", "prix_final", "discount_percent", "montant"]]
+                df_display.columns = ["Examen", "Payé", "Gratuit", "Prix unitaire (FCFA)", "Réduction", "Montant (FCFA)"]
                 st.dataframe(df_display, use_container_width=True, hide_index=True)
                 
                 total_montant = sum(e["montant"] for e in st.session_state.temp_examens)
@@ -1077,7 +1177,9 @@ def show():
                             {
                                 "examen_id": e["examen_id"],
                                 "quantite_payee": e["quantite_payee"],
-                                "quantite_gratuite": e["quantite_gratuite"]
+                                "quantite_gratuite": e["quantite_gratuite"],
+                                "prix_unitaire_applique": e["prix_final"],
+                                "discount_percent": e["discount_percent"]
                             }
                             for e in st.session_state.temp_examens
                         ]
@@ -1113,12 +1215,9 @@ def show():
     total_patients = len(data.get("patients", []))
     total_transactions = len(data["transactions"])
     total_montant = 0
-    ex_dict = {e["id"]: e for e in data["examens"]}
     
     for t in data["transactions"]:
-        ex = ex_dict.get(t["examen_id"])
-        if ex:
-            total_montant += t["quantite_payee"] * ex["prix"]
+        total_montant += t.get("montant", 0)
     
     with col1:
         st.metric("👥 Patients", total_patients)
@@ -1183,11 +1282,7 @@ def show():
             if not show_patient:
                 continue
             
-            total_patient = 0
-            for t in transactions:
-                ex = ex_dict.get(t["examen_id"])
-                if ex:
-                    total_patient += t["quantite_payee"] * ex["prix"]
+            total_patient = sum(t.get("montant", 0) for t in transactions)
             
             if search:
                 search_lower = search.lower()
@@ -1208,7 +1303,11 @@ def show():
                     for t in transactions:
                         ex = ex_dict.get(t["examen_id"])
                         if ex:
-                            col1, col2, col3, col4, col5 = st.columns([1, 2, 2, 1.5, 1.5])
+                            prix_unitaire = t.get("prix_unitaire", ex["prix"])
+                            discount = t.get("discount_percent", 0)
+                            montant = t.get("montant", t["quantite_payee"] * prix_unitaire)
+                            
+                            col1, col2, col3, col4, col5, col6 = st.columns([1, 2, 2, 1.5, 1, 1.5])
                             with col1:
                                 st.caption(f"#{t['id']}")
                             with col2:
@@ -1218,7 +1317,12 @@ def show():
                             with col4:
                                 st.write(f"Payé: {t['quantite_payee']} | Gratuit: {t['quantite_gratuite']}")
                             with col5:
-                                montant = t["quantite_payee"] * ex["prix"]
+                                if discount > 0:
+                                    st.caption(f"-{discount}%")
+                                    st.caption(f"({prix_unitaire:,.0f} FCFA)")
+                                else:
+                                    st.write(f"{prix_unitaire:,.0f} FCFA")
+                            with col6:
                                 st.write(f"{montant:,.0f} FCFA")
                             
                             btn_col1, btn_col2 = st.columns(2)

@@ -97,6 +97,12 @@ def show():
             continue
             
         dec = dec_dict.get(t["decade_id"], {})
+        
+        # Utiliser le montant déjà calculé dans la transaction (avec réduction)
+        montant = t.get("montant", t["quantite_payee"] * ex.get("prix", 0))
+        prix_unitaire = t.get("prix_unitaire", ex.get("prix", 0))
+        discount_percent = t.get("discount_percent", 0)
+        
         records.append({
             "Categorie_ID": categorie_id,
             "Catégorie": nom_categorie,
@@ -106,7 +112,9 @@ def show():
             "Année": dec.get("annee", ""),
             "Quantité Payée": t["quantite_payee"],
             "Quantité Gratuite": t["quantite_gratuite"],
-            "Montant (FCFA)": t["quantite_payee"] * ex.get("prix", 0)
+            "Prix Unitaire (FCFA)": prix_unitaire,
+            "Discount (%)": discount_percent,
+            "Montant (FCFA)": montant
         })
 
     df = pd.DataFrame(records)
@@ -166,7 +174,9 @@ def show():
     
     with col_table:
         st.subheader("📋 Récapitulatif détaillé")
-        st.dataframe(df_filtered, use_container_width=True, hide_index=True)
+        # Afficher les colonnes avec les infos de réduction
+        df_display = df_filtered[["Catégorie", "NOM DE L'EXAMEN", "Décade", "Quantité Payée", "Quantité Gratuite", "Prix Unitaire (FCFA)", "Discount (%)", "Montant (FCFA)"]]
+        st.dataframe(df_display, use_container_width=True, hide_index=True)
 
     with col_exports:
         st.subheader("📎 Rapport Officiel")

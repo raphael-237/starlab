@@ -1,4 +1,4 @@
-# pages/statistiques_prescripteur_page.py - VERSION DÉFINITIVE CORRIGÉE
+# pages/statistiques_prescripteur_page.py - VERSION AVEC PRIX RÉDUITS
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -102,7 +102,11 @@ def show():
         dec = decades.get(t["decade_id"], {})
         pres_nom = prescripteurs.get(t["prescripteur_id"], "Inconnu")
         cat_nom = categories.get(ex.get("categorie_id"), "Autres")
-        montant = t["quantite_payee"] * ex.get("prix", 0)
+        
+        # Utiliser le montant déjà calculé dans la transaction (avec réduction)
+        montant = t.get("montant", t["quantite_payee"] * ex.get("prix", 0))
+        prix_unitaire = t.get("prix_unitaire", ex.get("prix", 0))
+        discount_percent = t.get("discount_percent", 0)
 
         records.append({
             "prescripteur": pres_nom,
@@ -113,6 +117,8 @@ def show():
             "annee": dec.get("annee", ""),
             "qte_payee": t["quantite_payee"],
             "qte_gratuite": t["quantite_gratuite"],
+            "prix_unitaire": prix_unitaire,
+            "discount_percent": discount_percent,
             "montant": montant
         })
 
@@ -168,8 +174,24 @@ def show():
     
     with col_tab:
         st.subheader("📋 Récapitulatif par période")
+        # Créer un pivot avec les montants (déjà réduits)
         pivot_display = df_filtered.groupby(["prescripteur", "decade"])["montant"].sum().unstack(fill_value=0)
         st.dataframe(pivot_display, use_container_width=True)
+        
+        # Afficher un tableau détaillé avec les réductions
+        with st.expander("📊 Détail des transactions avec réductions"):
+            df_detail = df_filtered[["prescripteur", "examen", "decade", "qte_payee", "qte_gratuite", "prix_unitaire", "discount_percent", "montant"]]
+            df_detail = df_detail.rename(columns={
+                "prescripteur": "Prescripteur",
+                "examen": "Examen",
+                "decade": "Décade",
+                "qte_payee": "Payé",
+                "qte_gratuite": "Gratuit",
+                "prix_unitaire": "Prix unitaire (FCFA)",
+                "discount_percent": "Réduction (%)",
+                "montant": "Montant (FCFA)"
+            })
+            st.dataframe(df_detail, use_container_width=True, hide_index=True)
 
     with col_exp:
         st.subheader("📎 Export")
@@ -265,12 +287,13 @@ def export_prescripteur_word(df_source):
     run_date.bold = True
     run_date.font.size = Pt(11)
 
-    # --- 4. CALCULS COMBINÉS ---
-    stats_decades = {dec: {"paye": 0, "gratuit": 0} for dec in dec_order}
+    # --- 4. CALCULS COMBINÉS (avec montants réduits) ---
+    stats_decades = {dec: {"paye": 0, "gratuit": 0, "montant": 0} for dec in dec_order}
     for dec in dec_order:
         d_df = df_presc[df_presc['decade'] == dec]
         stats_decades[dec]["paye"] = int(d_df['qte_payee'].sum())
         stats_decades[dec]["gratuit"] = int(d_df['qte_gratuite'].sum())
+        stats_decades[dec]["montant"] = int(d_df['montant'].sum())
 
     # --- 5. TABLEAU : NOMBRE D'EXAMENS EFFECTUES AVEC INTERVALLES ---
     doc.add_paragraph()
@@ -344,37 +367,55 @@ def export_prescripteur_word(df_source):
 
         df_cat = df_presc[df_presc['categorie'] == cat_id]
         if not df_cat.empty:
-            summ = df_cat.groupby(["prescripteur", "decade"]).agg({"qte_payee":"sum", "qte_gratuite":"sum", "montant":"sum"}).reset_index()
+            # Agréger par prescripteur et décade avec les montants (déjà réduits)
+            summ = df_cat.groupby(["prescripteur", "decade"]).agg({
+                "qte_payee": "sum", 
+                "qte_gratuite": "sum", 
+                "montant": "sum"
+            }).reset_index()
+            
             for presc in summ["prescripteur"].unique():
                 r = table.add_row().cells
                 r[0].text = str(presc)
                 lp, lg, lm = 0, 0, 0
                 for i, dec in enumerate(dec_order):
                     d = summ[(summ["prescripteur"]==presc) & (summ["decade"]==dec)]
-                    p, g, m = int(d["qte_payee"].sum()), int(d["qte_gratuite"].sum()), int(d["montant"].sum())
+                    p = int(d["qte_payee"].sum()) if not d.empty else 0
+                    g = int(d["qte_gratuite"].sum()) if not d.empty else 0
+                    m = int(d["montant"].sum()) if not d.empty else 0
                     r[1+(i*3)].text = str(p) if p>0 else ""
                     r[2+(i*3)].text = str(g) if g>0 else ""
                     r[3+(i*3)].text = f"{m:,}" if m>0 else ""
                     target = tot_med if cat_id == "MEDECINS" else tot_inf
-                    target[1+(i*3)]+=p; target[2+(i*3)]+=g; target[3+(i*3)]+=m
-                    lp+=p; lg+=g; lm+=m
+                    target[1+(i*3)] += p
+                    target[2+(i*3)] += g
+                    target[3+(i*3)] += m
+                    lp += p
+                    lg += g
+                    lm += m
                 r[10].text, r[11].text, r[12].text = str(lp), str(lg), f"{lm:,}"
-                target[10]+=lp; target[11]+=lg; target[12]+=lm
+                target[10] += lp
+                target[11] += lg
+                target[12] += lm
 
         # Ligne Sous-Total
         sr = table.add_row().cells
         sr[0].paragraphs[0].add_run(f"Sous-Total - {cat_id}").bold = True
         curr = tot_med if cat_id == "MEDECINS" else tot_inf
         for i in range(1, 13):
-            val_txt = f"{curr[i]:,}" if i%3==0 else str(curr[i])
+            val_txt = f"{curr[i]:,}" if i%3 == 0 else str(curr[i])
             sr[i].paragraphs[0].add_run(val_txt).bold = True
 
         if cat_id == "INFIRMIERS":
             for i, dec in enumerate(dec_order):
                 dk = df_kits[df_kits['decade'] == dec]
-                pk, gk, mk = int(dk['qte_payee'].sum()), int(dk['qte_gratuite'].sum()), int(dk['montant'].sum())
+                pk = int(dk['qte_payee'].sum()) if not dk.empty else 0
+                gk = int(dk['qte_gratuite'].sum()) if not dk.empty else 0
+                mk = int(dk['montant'].sum()) if not dk.empty else 0
                 tot_kit[1+(i*3)], tot_kit[2+(i*3)], tot_kit[3+(i*3)] = pk, gk, mk
-                tot_kit[10]+=pk; tot_kit[11]+=gk; tot_kit[12]+=mk
+                tot_kit[10] += pk
+                tot_kit[11] += gk
+                tot_kit[12] += mk
 
             for lbl, vals in [("TOTAL GENERAL", {i: tot_med[i]+tot_inf[i] for i in range(1,13)}),
                               ("KIT PRELEVEMENT", tot_kit),
@@ -382,7 +423,7 @@ def export_prescripteur_word(df_source):
                 r = table.add_row().cells
                 r[0].paragraphs[0].add_run(lbl).bold = True
                 for i in range(1, 13):
-                    v_txt = f"{vals[i]:,}" if i%3==0 else str(vals[i])
+                    v_txt = f"{vals[i]:,}" if i%3 == 0 else str(vals[i])
                     r[i].paragraphs[0].add_run(v_txt).bold = True
 
     # --- 7. SORTIE ---
