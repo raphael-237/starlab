@@ -21,74 +21,37 @@ def reset_wizard():
     st.session_state.use_custom_date = False
 
 def get_decade_from_date(annee: int, mois: int, jour: int):
-    """
-    Trouve la décade correspondant à une date donnée
-    - Recherche dans TOUTES les décades (passées, présentes et futures)
-    - Ne filtre aucune décade
-    """
+    """Trouve la décade correspondant à une date donnée"""
     data = load_data()
     date_str = f"{annee}-{mois:02d}-{jour:02d}"
-    
-    # Parcourir TOUTES les décades sans aucun filtre
     for decade in data["decades"]:
         if decade["date_debut"] <= date_str <= decade["date_fin"]:
             return decade
     return None
 
 def parse_age(age_str):
-    """
-    Parse l'âge depuis différents formats:
-    - "30 Ans" -> 30
-    - "30 ans" -> 30
-    - "30" -> 30
-    - "11 mois" -> 0 (car moins d'un an)
-    - "1 an" -> 1
-    - "20 Ans, 6 mois" -> 20
-    - "15 ans 3 mois" -> 15
-    - "2 semaines" -> 0
-    - "1 semaine" -> 0
-    - "3 jours" -> 0
-    """
     if age_str is None or pd.isna(age_str):
         return None
-    
     age_str = str(age_str).strip().lower()
-    
-    # Vérifier si c'est en semaines ou jours (moins d'un an)
     if any(unit in age_str for unit in ['semaine', 'sem', 'jour', 'jr']):
         return 0
-    
-    # Extraire les années
     year_pattern = r'(\d+)\s*(?:an|ans|année|années)'
     year_match = re.search(year_pattern, age_str)
-    
     if year_match:
         return int(year_match.group(1))
-    
-    # Si pas d'années trouvées, chercher juste un nombre (si pas de mention de mois)
     if 'mois' not in age_str:
         simple_number = re.search(r'(\d+)', age_str)
         if simple_number:
             return int(simple_number.group(1))
-    
-    # Si c'est uniquement des mois, retourner 0
     month_pattern = r'(\d+)\s*(?:mois|moi)'
     if re.search(month_pattern, age_str) and 'an' not in age_str:
         return 0
-    
     return None
 
 def parse_sexe(sexe_str):
-    """
-    Parse le sexe depuis différents formats:
-    - "F", "Féminin", "FEMME", "FEMININ" -> "F"
-    - "M", "Masculin", "HOMME", "MASCULIN" -> "M"
-    """
     if sexe_str is None or pd.isna(sexe_str):
         return None
-    
     sexe_str = str(sexe_str).strip().upper()
-    
     if sexe_str in ['F', 'FEMININ', 'FEMME', 'FÉMININ']:
         return "F"
     elif sexe_str in ['M', 'MASCULIN', 'HOMME']:
@@ -97,7 +60,6 @@ def parse_sexe(sexe_str):
         return None
 
 def safe_int(value, default=None):
-    """Convertit une valeur en entier de manière sécurisée"""
     if pd.isna(value):
         return default
     try:
@@ -111,24 +73,17 @@ def safe_int(value, default=None):
         return default
 
 def safe_str(value, default=""):
-    """Convertit une valeur en chaîne de manière sécurisée"""
     if pd.isna(value):
         return default
     return str(value).strip()
 
 def has_any_data(row):
-    """
-    Vérifie si une ligne contient au moins une cellule avec des données
-    """
     for cell in row:
         if pd.notna(cell) and str(cell).strip() and str(cell).strip() not in ['', 'nan', 'NaN', 'None']:
             return True
     return False
 
 def find_data_rows(df, start_row=0):
-    """
-    Trouve toutes les lignes contenant des données (au moins une cellule non vide)
-    """
     data_rows = []
     for idx in range(start_row, len(df)):
         row = df.iloc[idx]
@@ -137,41 +92,25 @@ def find_data_rows(df, start_row=0):
     return data_rows
 
 def parse_exam_with_discount(exam_string):
-    """
-    Parse un examen qui peut contenir un pourcentage de réduction
-    Format possible: "30% NFS" ou "NFS" ou "20%GE" ou "15 % CRP"
-    Retourne: (exam_name, discount_percent)
-    """
     if not exam_string:
         return None, 0
-    
     exam_string = str(exam_string).strip()
-    
-    # Pattern pour détecter un pourcentage devant l'examen
-    # Exemples: "30% NFS", "20%GE", "15 % CRP", "12.5% Glycemie"
     pattern = r'^(\d+(?:[.,]\d+)?)\s*%\s*(.+)$'
     match = re.match(pattern, exam_string)
-    
     if match:
         discount_str = match.group(1).replace(',', '.')
         discount_percent = float(discount_str)
         exam_name = match.group(2).strip()
         return exam_name, discount_percent
-    
-    # Pas de réduction
     return exam_string, 0
 
 def import_transactions_from_file(uploaded_file):
-    """
-    Importe les transactions depuis un fichier Excel avec gestion des réductions
-    """
     from modules.data_manager import get_next_id
-    
     data = load_data()
     
     mois_map = {
         'janvier': 1, 'février': 2, 'mars': 3, 'avril': 4, 'mai': 5, 'juin': 6,
-        'juillet': 7, 'août': 8, 'aout': 8, 'septembre': 9, 'octobre': 10, 
+        'juillet': 7, 'août': 8, 'aout': 8, 'septembre': 9, 'octobre': 10,
         'novembre': 11, 'décembre': 12, 'decembre': 12,
         'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
         'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
@@ -191,11 +130,16 @@ def import_transactions_from_file(uploaded_file):
         'iono': 'ionogramme',
         'combi': 'combi11',
         'combi11': 'combi11',
+        'combi 11': 'combi11',
         'gsrh': 'gsrh',
         'aslo': 'aslo',
         'hbs': 'hbs',
         'hcv': 'hcv',
         'hpylori': 'hpylori',
+        'h-pylorie': 'hpylori',
+        'h pylori': 'hpylori',
+        'h.pylori': 'hpylori',
+        'helicobacter': 'hpylori',
         'tord': 'tord',
         'wid al': 'widal',
         'widal': 'widal',
@@ -227,13 +171,12 @@ def import_transactions_from_file(uploaded_file):
     start_row = 0
     if len(df) > 0:
         first_row_value = str(df.iloc[0, 0]).lower().strip() if pd.notna(df.iloc[0, 0]) else ""
-        header_keywords = ['annee', 'année', 'year', 'mois', 'month', 'jour', 'day', 
+        header_keywords = ['annee', 'année', 'year', 'mois', 'month', 'jour', 'day',
                            'numero', 'number', 'age', 'âge', 'sexe', 'prescripteur', 'examen', 'kit']
         if any(keyword in first_row_value for keyword in header_keywords):
             start_row = 1
     
     data_rows = find_data_rows(df, start_row)
-    
     if not data_rows:
         return False, "Aucune ligne avec des données trouvée dans le fichier."
     
@@ -294,7 +237,15 @@ def import_transactions_from_file(uploaded_file):
     def resolve_exam_name(exam_name):
         if not exam_name:
             return None
+        # Règle explicite pour BU (suppression des points et espaces)
+        exam_raw = str(exam_name).strip()
+        exam_clean = re.sub(r'[.\s]', '', exam_raw).lower()
+        if exam_clean == 'bu':
+            return 'combi11'
         exam_normalized = normalize_text(exam_name)
+        exam_normalized_clean = re.sub(r'[.\s]', '', exam_normalized)
+        if exam_normalized_clean == 'bu':
+            return 'combi11'
         for abbr, full_name in exam_abbreviations.items():
             if exam_normalized == abbr or exam_normalized in abbr or abbr in exam_normalized:
                 return full_name
@@ -315,7 +266,7 @@ def import_transactions_from_file(uploaded_file):
             return examens_dict[exam_normalized]["id"], examens_dict[exam_normalized]["prix"]
         for db_name, exam_data in examens_dict.items():
             db_normalized = normalize_text(db_name)
-            if exam_normalized in db_normalized or db_normalized in exam_normalized:
+            if exam_normalized == db_normalized or db_normalized in exam_normalized or exam_normalized in db_normalized:
                 return exam_data["id"], exam_data["prix"]
         exam_words = set(exam_normalized.split())
         for db_name, exam_data in examens_dict.items():
@@ -329,30 +280,18 @@ def import_transactions_from_file(uploaded_file):
         return None, None
     
     def find_matching_exam_with_discount(exam_name_with_discount):
-        """
-        Trouve l'examen en tenant compte d'une éventuelle réduction
-        Retourne: (examen_id, prix_apres_reduction, discount_percent, prix_original)
-        """
         if not exam_name_with_discount:
             return None, None, 0, None
-        
         exam_name, discount_percent = parse_exam_with_discount(exam_name_with_discount)
-        
         if not exam_name:
             return None, None, 0, None
-        
-        # Trouver l'examen de base
         examen_id, prix_original = find_matching_exam(exam_name)
-        
         if examen_id is None:
             return None, None, 0, None
-        
-        # Appliquer la réduction si nécessaire
         if discount_percent > 0:
             prix_final = prix_original * (1 - discount_percent / 100)
             prix_final = round(prix_final)
             return examen_id, prix_final, discount_percent, prix_original
-        
         return examen_id, prix_original, 0, prix_original
     
     def split_multiple_exams(exam_string):
@@ -403,7 +342,6 @@ def import_transactions_from_file(uploaded_file):
     
     for original_idx, row in rows_to_process:
         line_num = original_idx + 1
-        
         try:
             annee = safe_int(row[0])
             mois_raw = row[1]
@@ -470,7 +408,7 @@ def import_transactions_from_file(uploaded_file):
             if kit_quantity > 0:
                 stats["warnings"].append(f"Ligne {line_num}: {kit_quantity} kit(s) de prélèvement enregistré(s)")
             
-            exam_list = split_multiple_exams(examens_raw)
+            exam_list = split_multiple_exams(examens_raw) if examens_raw else []
             exam_gratuit_list = split_multiple_exams(examens_gratuits_raw) if examens_gratuits_raw else []
             
             decade = get_decade_from_date(annee, mois, jour)
@@ -480,13 +418,10 @@ def import_transactions_from_file(uploaded_file):
             
             examens_trouves = []
             
-            # Traitement des examens payants (avec réduction possible)
             for exam_item in exam_list:
                 if not exam_item:
                     continue
-                
                 examen_id, prix_applique, discount, prix_original = find_matching_exam_with_discount(exam_item)
-                
                 if examen_id is None:
                     stats["errors"].append(f"Ligne {line_num}: Examen payant '{exam_item}' non trouvé")
                 else:
@@ -497,18 +432,13 @@ def import_transactions_from_file(uploaded_file):
                         "prix_unitaire_applique": prix_applique,
                         "discount_percent": discount
                     })
-                    
                     if discount > 0:
-                        stats["warnings"].append(f"Ligne {line_num}: Réduction de {discount}% appliquée sur '{exam_item}' (prix original: {prix_original} FCFA → {prix_applique} FCFA)")
+                        stats["warnings"].append(f"Ligne {line_num}: Réduction de {discount}% appliquée sur '{exam_item}'")
             
-            # Traitement des examens gratuits (pas de réduction)
             for exam_item in exam_gratuit_list:
                 if not exam_item:
                     continue
-                
-                # Les examens gratuits n'ont pas de réduction
                 examen_id, prix_original = find_matching_exam(exam_item)
-                
                 if examen_id is None:
                     stats["errors"].append(f"Ligne {line_num}: Examen gratuit '{exam_item}' non trouvé")
                 else:
@@ -536,7 +466,6 @@ def import_transactions_from_file(uploaded_file):
                 continue
             
             patient_key = f"{annee}-{mois:02d}-{jour:02d}_{numero_ordre}"
-            
             if patient_key not in patients_groups:
                 patients_groups[patient_key] = {
                     "date": f"{annee}-{mois:02d}-{jour:02d}",
@@ -547,7 +476,6 @@ def import_transactions_from_file(uploaded_file):
                     "decade_id": decade["id"],
                     "examens": []
                 }
-            
             patients_groups[patient_key]["examens"].extend(examens_trouves)
             
         except Exception as e:
@@ -560,38 +488,32 @@ def import_transactions_from_file(uploaded_file):
         try:
             current_data = load_data()
             patient_date = datetime.strptime(patient_data["date"], "%Y-%m-%d").date()
-            
             existing_patient = None
             for p in current_data.get("patients", []):
                 if p.get("date_jour") == patient_data["date"] and p.get("numero_ordre") == patient_data["numero_ordre"]:
                     existing_patient = p
                     break
-            
             if existing_patient:
                 patient_id = existing_patient["id"]
             else:
                 new_patient = add_patient(
-                    sexe=patient_data["sexe"], 
+                    sexe=patient_data["sexe"],
                     age=patient_data["age"],
                     date_enregistrement=patient_date
                 )
                 current_data = load_data()
                 patient_id = new_patient["id"]
                 stats["patients_created"] += 1
-            
             stats["imported_ids"]["patients"].append(patient_id)
-            
             transaction_ids = add_transaction_group(
                 patient_id=patient_id,
                 prescripteur_id=patient_data["prescripteur_id"],
                 decade_id=patient_data["decade_id"],
                 examens=patient_data["examens"]
             )
-            
             stats["transactions_created"] += len(transaction_ids)
             stats["imported_ids"]["transactions"].extend(transaction_ids)
             stats["success"] += 1
-            
         except Exception as e:
             stats["errors"].append(f"Patient {patient_data['numero_ordre']}: Erreur - {str(e)}")
     
@@ -604,65 +526,42 @@ def import_transactions_from_file(uploaded_file):
     return True, stats
 
 def delete_all_imported_data():
-    """
-    Supprime toutes les données marquées comme importées
-    """
     data = load_data()
-    
     if "imported_data_ids" not in st.session_state:
         return 0, 0
-    
     patients_to_delete = st.session_state.imported_data_ids.get("patients", [])
     transactions_to_delete = st.session_state.imported_data_ids.get("transactions", [])
-    
     original_patient_count = len(data.get("patients", []))
     data["patients"] = [p for p in data.get("patients", []) if p["id"] not in patients_to_delete]
     deleted_patients = original_patient_count - len(data["patients"])
-    
     original_transaction_count = len(data["transactions"])
     data["transactions"] = [t for t in data["transactions"] if t["id"] not in transactions_to_delete]
     deleted_transactions = original_transaction_count - len(data["transactions"])
-    
     save_data(data)
-    
-    st.session_state.imported_data_ids = {
-        "patients": [],
-        "transactions": []
-    }
-    
+    st.session_state.imported_data_ids = {"patients": [], "transactions": []}
     return deleted_patients, deleted_transactions
 
 def delete_all_data():
-    """
-    Supprime TOUTES les données des patients et des transactions
-    """
+    # Invalider le cache avant de charger
+    if hasattr(load_data, "clear"):
+        load_data.clear()
     data = load_data()
-    
-    # Compter les éléments avant suppression
     patients_count = len(data.get("patients", []))
     transactions_count = len(data["transactions"])
-    
-    # Vider les listes
     data["patients"] = []
     data["transactions"] = []
-    
-    # Réinitialiser aussi les IDs importés dans la session
     if "imported_data_ids" in st.session_state:
         st.session_state.imported_data_ids = {"patients": [], "transactions": []}
-    
-    # Sauvegarder les modifications
     save_data(data)
-    
+    # Re-invalider après sauvegarde
+    if hasattr(load_data, "clear"):
+        load_data.clear()
     return patients_count, transactions_count
 
 @st.dialog("📤 Importer des transactions")
 def modal_import_transactions():
-    """
-    Fenêtre modale pour l'importation de transactions depuis un fichier
-    """
     st.markdown("### 📤 Importation de transactions")
     st.markdown("Téléchargez un fichier Excel avec les colonnes suivantes:")
-    
     with st.expander("📋 Format du fichier attendu"):
         st.markdown("""
         | Colonne | Description | Exemple |
@@ -679,14 +578,7 @@ def modal_import_transactions():
         | 10 | Examens gratuits | GLYCEMIE |
         """)
         st.info("💡 **Note**: Pour appliquer une réduction, mettez le pourcentage devant l'examen (ex: '20% CRP' ou '15% NFS')")
-    
-    uploaded_file = st.file_uploader(
-        "Choisir un fichier Excel (.xlsx, .xls)",
-        type=["xlsx", "xls"],
-        key="import_file_uploader",
-        help="Le fichier doit contenir exactement 10 colonnes"
-    )
-    
+    uploaded_file = st.file_uploader("Choisir un fichier Excel (.xlsx, .xls)", type=["xlsx", "xls"], key="import_file_uploader")
     if uploaded_file is not None:
         try:
             df_preview = pd.read_excel(uploaded_file, header=None, nrows=5)
@@ -694,7 +586,6 @@ def modal_import_transactions():
             st.dataframe(df_preview, use_container_width=True)
         except Exception as e:
             st.error(f"Impossible de lire l'aperçu: {str(e)}")
-        
         col1, col2 = st.columns(2)
         with col1:
             if st.button("❌ Annuler", key="btn_cancel_import", use_container_width=True):
@@ -705,7 +596,6 @@ def modal_import_transactions():
                     success, result = import_transactions_from_file(uploaded_file)
                     if success:
                         st.success("✅ Importation terminée avec succès!")
-                        
                         st.markdown("### 📊 Résultats de l'importation")
                         col1, col2, col3 = st.columns(3)
                         with col1:
@@ -714,45 +604,35 @@ def modal_import_transactions():
                             st.metric("👥 Patients créés", result["patients_created"])
                         with col3:
                             st.metric("📋 Transactions créées", result["transactions_created"])
-                        
                         if result["warnings"]:
                             with st.expander(f"⚠️ {len(result['warnings'])} avertissement(s)"):
                                 for warning in result["warnings"]:
                                     st.warning(warning)
-                        
                         if result["errors"]:
                             st.error(f"❌ {len(result['errors'])} erreur(s)")
                             with st.expander("Voir les détails"):
                                 for error in result["errors"]:
                                     st.error(error)
-                        
                         if st.button("Fermer", key="btn_close_success", use_container_width=True):
                             st.rerun()
                     else:
                         st.error(f"❌ Erreur: {result}")
-    
     st.markdown("---")
     if st.button("❌ Fermer", key="btn_close_modal", use_container_width=True):
         st.rerun()
 
 @st.dialog("⚠️ Supprimer toutes les données importées")
 def modal_delete_imported_data():
-    """
-    Fenêtre modale de confirmation pour supprimer toutes les données importées
-    """
     st.warning("⚠️ Êtes-vous sûr de vouloir supprimer TOUTES les données importées ?")
     st.caption("Cette action supprimera tous les patients et transactions qui ont été importés via Excel.")
     st.caption("Cette action est irréversible.")
-    
     if "imported_data_ids" in st.session_state:
         patients_count = len(st.session_state.imported_data_ids.get("patients", []))
         transactions_count = len(st.session_state.imported_data_ids.get("transactions", []))
-        
         if patients_count > 0 or transactions_count > 0:
             st.info(f"📊 Données concernées: {patients_count} patient(s) et {transactions_count} transaction(s)")
         else:
             st.info("📊 Aucune donnée importée à supprimer.")
-    
     col1, col2 = st.columns(2)
     with col1:
         if st.button("❌ Annuler", key="btn_cancel_delete", use_container_width=True):
@@ -766,27 +646,19 @@ def modal_delete_imported_data():
 
 @st.dialog("⚠️⚠️ VIDER COMPLÈTEMENT LA BASE DE DONNÉES ⚠️⚠️")
 def modal_delete_all_data():
-    """
-    Fenêtre modale de confirmation pour vider TOUTE la base de données
-    """
     st.error("🔴 **ATTENTION - ACTION IRRÉVERSIBLE** 🔴")
     st.markdown("Vous êtes sur le point de supprimer **TOUS** les patients et **TOUTES** les transactions.")
     st.markdown("Cette action est définitive et ne peut pas être annulée.")
-    
     data = load_data()
     patients_count = len(data.get("patients", []))
     transactions_count = len(data["transactions"])
-    
     if patients_count > 0 or transactions_count > 0:
         st.warning(f"📊 **Données concernées :** {patients_count} patient(s) et {transactions_count} transaction(s)")
     else:
         st.info("📊 La base de données est déjà vide.")
-    
     st.markdown("---")
     st.markdown("Pour confirmer, tapez **VIDER** dans le champ ci-dessous :")
-    
     confirmation = st.text_input("Confirmation", key="delete_all_confirmation", placeholder="Tapez VIDER ici")
-    
     col1, col2 = st.columns(2)
     with col1:
         if st.button("❌ Annuler", key="btn_cancel_delete_all", use_container_width=True):
@@ -797,17 +669,13 @@ def modal_delete_all_data():
                 deleted_patients, deleted_transactions = delete_all_data()
                 st.success(f"✅ **SUPPRESSION TOTALE EFFECTUÉE** : {deleted_patients} patient(s) et {deleted_transactions} transaction(s) supprimés!")
                 st.balloons()
-                time.sleep(2)
+                time.sleep(1.5)
                 st.rerun()
             else:
                 st.error("❌ Confirmation incorrecte. Tapez exactement 'VIDER' pour confirmer.")
 
 def show():
-    """
-    Point d'entrée pour l'affichage de la page de saisie et d'historique des transactions
-    """
     data = load_data()
-    
     # Initialisation des variables de session
     if "wizard_active" not in st.session_state:
         st.session_state.wizard_active = False
@@ -828,12 +696,10 @@ def show():
     if "use_custom_date" not in st.session_state:
         st.session_state.use_custom_date = False
     
-    # --- HEADER SECTION ---
+    # HEADER
     st.markdown('<div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px;">', unsafe_allow_html=True)
-    
     imported_patients_count = len(st.session_state.imported_data_ids.get("patients", []))
     has_imported_data = imported_patients_count > 0
-    
     c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1])
     with c1:
         st.title("💰 Transactions Patient")
@@ -862,19 +728,17 @@ def show():
             if st.button("🗑️ Supprimer imports", key="btn_delete_imports", type="secondary", use_container_width=True):
                 modal_delete_imported_data()
         else:
-            st.button("🗑️ Supprimer imports", key="btn_delete_imports_disabled", type="secondary", use_container_width=True, disabled=True, 
-                     help="Aucune donnée importée à supprimer")
+            st.button("🗑️ Supprimer imports", key="btn_delete_imports_disabled", type="secondary", use_container_width=True, disabled=True, help="Aucune donnée importée à supprimer")
     with c5:
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🔴 VIDER LA BASE 🔴", key="btn_delete_all_data", type="secondary", use_container_width=True):
             modal_delete_all_data()
-    
     st.markdown('</div>', unsafe_allow_html=True)
     
     if has_imported_data:
         st.info(f"ℹ️ {imported_patients_count} patient(s) importé(s) sont présents dans la base.")
     
-    # --- FORMULAIRE WIZARD ---
+    # WIZARD (formulaire de saisie)
     if st.session_state.wizard_active:
         st.markdown('<div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px; border-left: 5px solid #2196F3 !important;">', unsafe_allow_html=True)
         
@@ -898,24 +762,11 @@ def show():
         
         if st.session_state.wizard_step == 1:
             st.markdown("### 👤 Informations du Patient")
-            
             st.markdown("#### 📅 Date d'enregistrement")
-            
-            use_custom_date = st.checkbox(
-                "📆 Utiliser une date différente", 
-                value=st.session_state.use_custom_date,
-                key="chk_use_custom_date",
-                help="Cochez pour enregistrer des transactions rétroactives"
-            )
+            use_custom_date = st.checkbox("📆 Utiliser une date différente", value=st.session_state.use_custom_date, key="chk_use_custom_date")
             st.session_state.use_custom_date = use_custom_date
-            
             if use_custom_date:
-                custom_date = st.date_input(
-                    "Date de l'enregistrement",
-                    value=st.session_state.custom_date,
-                    max_value=datetime.now().date(),
-                    key="date_custom"
-                )
+                custom_date = st.date_input("Date de l'enregistrement", value=st.session_state.custom_date, max_value=datetime.now().date(), key="date_custom")
                 st.session_state.custom_date = custom_date
                 date_for_number = custom_date
                 if custom_date > datetime.now().date():
@@ -926,28 +777,21 @@ def show():
                 date_for_number = datetime.now().date()
                 st.session_state.custom_date = date_for_number
                 st.caption(f"📅 Date d'enregistrement: {date_for_number.strftime('%d/%m/%Y')}")
-            
             st.markdown("---")
-            
             next_number = get_next_patient_number_for_date(date_for_number)
             patients_this_day = get_patients_for_date(date_for_number)
             st.info(f"📋 **Patients enregistrés le {date_for_number.strftime('%d/%m/%Y')}** : {len(patients_this_day)}")
             st.success(f"🔢 **Numéro d'ordre patient** : `{next_number}`")
-            
             col1, col2 = st.columns(2)
             with col1:
-                sexe = st.radio("Sexe", ["F", "M"], key="radio_sexe", horizontal=True, 
-                              format_func=lambda x: "Féminin" if x == "F" else "Masculin")
+                sexe = st.radio("Sexe", ["F", "M"], key="radio_sexe", horizontal=True, format_func=lambda x: "Féminin" if x == "F" else "Masculin")
             with col2:
                 age = st.number_input("Âge (années)", key="input_age", min_value=0, max_value=150, value=30, step=1)
-            
             st.markdown("---")
-            
             if patients_this_day:
                 with st.expander(f"📊 Voir les patients enregistrés le {date_for_number.strftime('%d/%m/%Y')}"):
                     for p in patients_this_day[-10:]:
                         st.write(f"**#{p['numero_ordre']}** - {p['sexe']} - {p['age']} ans")
-            
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("❌ Annuler", key="btn_cancel_step1", use_container_width=True):
@@ -969,21 +813,13 @@ def show():
         
         elif st.session_state.wizard_step == 2:
             st.markdown("### 🧪 Examens et Transaction")
-            
             patient_date = st.session_state.temp_patient.get('date_enregistrement', datetime.now().date())
-            
-            st.success(f"**Patient n°** : #{st.session_state.temp_patient['numero_ordre']} | "
-                      f"**Sexe** : {'Féminin' if st.session_state.temp_patient['sexe'] == 'F' else 'Masculin'} | "
-                      f"**Âge** : {st.session_state.temp_patient['age']} ans | "
-                      f"**Date** : {patient_date.strftime('%d/%m/%Y') if hasattr(patient_date, 'strftime') else patient_date}")
-            
+            st.success(f"**Patient n°** : #{st.session_state.temp_patient['numero_ordre']} | **Sexe** : {'Féminin' if st.session_state.temp_patient['sexe'] == 'F' else 'Masculin'} | **Âge** : {st.session_state.temp_patient['age']} ans | **Date** : {patient_date.strftime('%d/%m/%Y') if hasattr(patient_date, 'strftime') else patient_date}")
             st.markdown("---")
-            
             if hasattr(patient_date, 'strftime'):
                 current_decade = get_decade_for_date(patient_date)
             else:
                 current_decade = get_current_decade()
-            
             if not current_decade:
                 st.error(f"⚠️ Aucune décade trouvée pour la date {patient_date}. Veuillez générer les décades.")
                 col1, col2 = st.columns(2)
@@ -996,10 +832,7 @@ def show():
                         reset_wizard()
                         st.rerun()
                 return
-            
-            st.info(f"📅 **Décade de facturation** : {current_decade['periode']} - "
-                   f"{current_decade['mois']} {current_decade['annee']}")
-            
+            st.info(f"📅 **Décade de facturation** : {current_decade['periode']} - {current_decade['mois']} {current_decade['annee']}")
             pres_options = {p["nom"]: p["id"] for p in data["prescripteurs"]}
             if not pres_options:
                 st.error("Aucun prescripteur disponible.")
@@ -1013,24 +846,14 @@ def show():
                         reset_wizard()
                         st.rerun()
                 return
-            
             if st.session_state.prescripteur_selected is None:
                 st.session_state.prescripteur_selected = list(pres_options.keys())[0]
-            
-            pres_sel = st.selectbox(
-                "👤 Prescripteur", 
-                list(pres_options.keys()),
-                index=list(pres_options.keys()).index(st.session_state.prescripteur_selected) if st.session_state.prescripteur_selected in pres_options else 0,
-                key="prescripteur_select"
-            )
+            pres_sel = st.selectbox("👤 Prescripteur", list(pres_options.keys()), index=list(pres_options.keys()).index(st.session_state.prescripteur_selected) if st.session_state.prescripteur_selected in pres_options else 0, key="prescripteur_select")
             st.session_state.prescripteur_selected = pres_sel
-            
             st.markdown("---")
             st.markdown("#### 📋 Ajouter des examens au panier")
-            
             with st.container(border=True):
                 st.markdown("**➕ Ajouter un examen**")
-                
                 col1, col2, col3 = st.columns([2, 1, 1])
                 with col1:
                     ex_options = {f"{e['nom']} ({e['prix']:,.0f} FCFA)": e for e in data["examens"]}
@@ -1046,21 +869,12 @@ def show():
                                 reset_wizard()
                                 st.rerun()
                         return
-                    
-                    ex_sel = st.selectbox(
-                        "Type d'Examen", 
-                        list(ex_options.keys()), 
-                        key=f"ex_sel_{st.session_state.last_exam_key}"
-                    )
+                    ex_sel = st.selectbox("Type d'Examen", list(ex_options.keys()), key=f"ex_sel_{st.session_state.last_exam_key}")
                     selected_exam = ex_options[ex_sel]
-                
                 with col2:
                     q_payee = st.number_input("Quantité PAYÉE", min_value=0, value=1, step=1, key="q_payee")
-                
                 with col3:
                     q_gratuite = st.number_input("Quantité GRATUITE", min_value=0, value=0, step=1, key="q_gratuite")
-                
-                # Option de réduction
                 st.markdown("**💰 Réduction (optionnelle)**")
                 col_disc1, col_disc2 = st.columns(2)
                 with col_disc1:
@@ -1069,7 +883,6 @@ def show():
                     discount_percent = 0
                     if apply_discount:
                         discount_percent = st.number_input("Pourcentage de réduction (%)", min_value=0, max_value=100, value=0, step=5, key="discount_percent")
-                
                 if st.button("🛒 Ajouter au panier", key="btn_add_to_cart", type="secondary", use_container_width=True):
                     if q_payee == 0 and q_gratuite == 0:
                         st.error("Veuillez saisir au moins une quantité")
@@ -1103,40 +916,27 @@ def show():
                                 "montant": montant
                             })
                             st.toast(f"✅ Ajouté : {selected_exam['nom']}", icon="🛒")
-                        
                         st.session_state.last_exam_key += 1
                         time.sleep(0.5)
                         st.rerun()
-            
             st.markdown("---")
-            
             if st.session_state.temp_examens:
                 st.markdown("#### 🛒 Panier des examens")
-                
                 df_panier = pd.DataFrame(st.session_state.temp_examens)
                 df_display = df_panier[["examen_nom", "quantite_payee", "quantite_gratuite", "prix_final", "discount_percent", "montant"]]
                 df_display.columns = ["Examen", "Payé", "Gratuit", "Prix unitaire (FCFA)", "Réduction", "Montant (FCFA)"]
                 st.dataframe(df_display, use_container_width=True, hide_index=True)
-                
                 total_montant = sum(e["montant"] for e in st.session_state.temp_examens)
                 st.metric("💰 Total à payer", f"{total_montant:,.0f} FCFA")
-                
                 st.markdown("**🗑️ Gestion du panier**")
                 col_del1, col_del2 = st.columns(2)
-                
                 with col_del1:
                     if len(st.session_state.temp_examens) > 0:
-                        item_to_delete = st.selectbox(
-                            "Sélectionner un examen à supprimer",
-                            options=range(len(st.session_state.temp_examens)),
-                            format_func=lambda x: f"{st.session_state.temp_examens[x]['examen_nom']}",
-                            key="delete_select"
-                        )
+                        item_to_delete = st.selectbox("Sélectionner un examen à supprimer", options=range(len(st.session_state.temp_examens)), format_func=lambda x: f"{st.session_state.temp_examens[x]['examen_nom']}", key="delete_select")
                         if st.button("🗑️ Supprimer cet examen", key="btn_delete_exam", use_container_width=True):
                             del st.session_state.temp_examens[item_to_delete]
                             st.toast("Examen retiré du panier", icon="🗑️")
                             st.rerun()
-                
                 with col_del2:
                     if st.button("⚠️ Vider tout le panier", key="btn_clear_cart", type="secondary", use_container_width=True):
                         st.session_state.temp_examens = []
@@ -1144,9 +944,7 @@ def show():
                         st.rerun()
             else:
                 st.info("📭 Aucun examen dans le panier.")
-            
             st.markdown("---")
-            
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 if st.button("⬅️ Retour patient", key="btn_back_patient", use_container_width=True):
@@ -1161,8 +959,7 @@ def show():
                     reset_wizard()
                     st.rerun()
             with col4:
-                if st.button("✅ ENREGISTRER", key="btn_save_transaction", type="primary", use_container_width=True, 
-                            disabled=len(st.session_state.temp_examens) == 0):
+                if st.button("✅ ENREGISTRER", key="btn_save_transaction", type="primary", use_container_width=True, disabled=len(st.session_state.temp_examens) == 0):
                     if not st.session_state.temp_examens:
                         st.error("Veuillez ajouter au moins un examen")
                     else:
@@ -1172,7 +969,6 @@ def show():
                             age=st.session_state.temp_patient["age"],
                             date_enregistrement=patient_date
                         )
-                        
                         examens_list = [
                             {
                                 "examen_id": e["examen_id"],
@@ -1183,19 +979,15 @@ def show():
                             }
                             for e in st.session_state.temp_examens
                         ]
-                        
                         transaction_ids = add_transaction_group(
                             patient_id=new_patient["id"],
                             prescripteur_id=pres_options[st.session_state.prescripteur_selected],
                             decade_id=current_decade["id"],
                             examens=examens_list
                         )
-                        
                         st.success(f"✅ {len(transaction_ids)} examen(s) enregistré(s) pour le patient n°{new_patient['numero_ordre']}")
-                        
                         st.markdown("---")
                         st.markdown("#### Que souhaitez-vous faire ensuite ?")
-                        
                         col_next1, col_next2 = st.columns(2)
                         with col_next1:
                             if st.button("🔄 Nouveau patient", key="btn_next_new_patient", use_container_width=True, type="primary"):
@@ -1205,20 +997,16 @@ def show():
                             if st.button("📊 Voir l'historique", key="btn_view_history", use_container_width=True):
                                 reset_wizard()
                                 st.rerun()
-        
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # --- STATISTIQUES RAPIDES ---
+    # STATISTIQUES RAPIDES
     st.markdown('<div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px;">', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
-    
     total_patients = len(data.get("patients", []))
     total_transactions = len(data["transactions"])
     total_montant = 0
-    
     for t in data["transactions"]:
         total_montant += t.get("montant", 0)
-    
     with col1:
         st.metric("👥 Patients", total_patients)
     with col2:
@@ -1229,17 +1017,14 @@ def show():
         today = datetime.now().strftime("%Y-%m-%d")
         patients_auj = len([p for p in data.get("patients", []) if p.get("date_jour") == today])
         st.metric("📅 Patients aujourd'hui", patients_auj)
-    
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # --- HISTORIQUE DES TRANSACTIONS ---
+    # HISTORIQUE DES TRANSACTIONS
     st.markdown('<div class="card p-4 border-0 shadow-sm" style="border-radius: 16px;">', unsafe_allow_html=True)
     st.subheader("📋 Historique des transactions")
-    
     patients_dict = {p["id"]: p for p in data.get("patients", [])}
     ex_dict = {e["id"]: e for e in data["examens"]}
     pr_dict = {p["id"]: p["nom"] for p in data["prescripteurs"]}
-    
     transactions_by_patient = {}
     for t in data["transactions"]:
         patient_id = t.get("patient_id")
@@ -1247,22 +1032,17 @@ def show():
             if patient_id not in transactions_by_patient:
                 transactions_by_patient[patient_id] = []
             transactions_by_patient[patient_id].append(t)
-    
     if transactions_by_patient:
         col_search, col_filter = st.columns([3, 1])
         with col_search:
             search = st.text_input("🔍 Rechercher", key="search_input", placeholder="Numéro patient, nom prescripteur ou examen...", label_visibility="collapsed")
         with col_filter:
             filter_date = st.selectbox("Filtrer par période", ["Tous", "Aujourd'hui", "Cette semaine", "Ce mois"], key="filter_date", label_visibility="collapsed")
-        
         sorted_patients = sorted(patients_dict.items(), key=lambda x: x[1].get("date_enregistrement", ""), reverse=True)
-        
         for patient_id, patient in sorted_patients:
             if patient_id not in transactions_by_patient:
                 continue
-            
             transactions = transactions_by_patient[patient_id]
-            
             show_patient = True
             if filter_date == "Aujourd'hui":
                 today = datetime.now().strftime("%Y-%m-%d")
@@ -1278,35 +1058,28 @@ def show():
                 current_month = datetime.now().strftime("%Y-%m")
                 if not patient["date_enregistrement"].startswith(current_month):
                     show_patient = False
-            
             if not show_patient:
                 continue
-            
             total_patient = sum(t.get("montant", 0) for t in transactions)
-            
             if search:
                 search_lower = search.lower()
                 patient_match = search_lower in str(patient["numero_ordre"])
                 pres_match = any(search_lower in pr_dict.get(t["prescripteur_id"], "").lower() for t in transactions)
                 ex_match = any(search_lower in ex_dict.get(t["examen_id"], {}).get("nom", "").lower() for t in transactions)
                 show_patient = patient_match or pres_match or ex_match
-            
             if show_patient:
                 is_imported = patient.get("is_imported", False)
                 import_badge = " 📥" if is_imported else ""
                 sex_icon = "👩" if patient["sexe"] == "F" else "👨"
                 patient_date = patient.get("date_jour", "Date inconnue")
-                
                 with st.expander(f"{sex_icon} Patient #{patient['numero_ordre']}{import_badge} - {patient['sexe']} - {patient['age']} ans - 📅 {patient_date} - 💰 {total_patient:,.0f} FCFA"):
                     st.markdown("**Examens effectués :**")
-                    
                     for t in transactions:
                         ex = ex_dict.get(t["examen_id"])
                         if ex:
                             prix_unitaire = t.get("prix_unitaire", ex["prix"])
                             discount = t.get("discount_percent", 0)
                             montant = t.get("montant", t["quantite_payee"] * prix_unitaire)
-                            
                             col1, col2, col3, col4, col5, col6 = st.columns([1, 2, 2, 1.5, 1, 1.5])
                             with col1:
                                 st.caption(f"#{t['id']}")
@@ -1324,7 +1097,6 @@ def show():
                                     st.write(f"{prix_unitaire:,.0f} FCFA")
                             with col6:
                                 st.write(f"{montant:,.0f} FCFA")
-                            
                             btn_col1, btn_col2 = st.columns(2)
                             with btn_col1:
                                 if st.button("✏️ Modifier", key=f"edit_{t['id']}", use_container_width=True):
@@ -1335,5 +1107,4 @@ def show():
                     st.divider()
     else:
         st.info("📭 Aucune transaction n'a encore été enregistrée dans le système.")
-    
     st.markdown('</div>', unsafe_allow_html=True)

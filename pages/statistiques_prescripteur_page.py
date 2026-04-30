@@ -1,4 +1,4 @@
-# pages/statistiques_prescripteur_page.py - VERSION AVEC PRIX RÉDUITS
+# pages/statistiques_prescripteur_page.py
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -11,13 +11,8 @@ from docx.enum.section import WD_ORIENT
 import os
 
 def get_current_decade_info():
-    """
-    Détermine la décade actuelle en fonction de la date du jour
-    Retourne un tuple (periode, date_debut, date_fin)
-    """
     data = load_data()
     today = datetime.now().strftime("%Y-%m-%d")
-    
     for decade in data["decades"]:
         if decade["date_debut"] <= today <= decade["date_fin"]:
             return {
@@ -27,23 +22,15 @@ def get_current_decade_info():
                 "mois": decade["mois"],
                 "annee": decade["annee"]
             }
-    
-    # Si aucune décade trouvée, retourner None
     return None
 
 def get_current_month_and_year():
-    """
-    Retourne le mois et l'année de la date d'impression
-    """
     now = datetime.now()
     mois_fr = {1:"Janvier", 2:"Février", 3:"Mars", 4:"Avril", 5:"Mai", 6:"Juin", 
                7:"Juillet", 8:"Août", 9:"Septembre", 10:"Octobre", 11:"Novembre", 12:"Décembre"}
     return mois_fr[now.month], now.year
 
 def get_decade_label_with_interval(decade_name):
-    """
-    Retourne le libellé de la décade avec son intervalle
-    """
     if "1ère" in decade_name or "1ere" in decade_name:
         return "1ère décade\n(1 - 10)"
     elif "2ème" in decade_name or "2eme" in decade_name:
@@ -53,25 +40,12 @@ def get_decade_label_with_interval(decade_name):
     return decade_name
 
 def show():
-    # --- CSS SPÉCIFIQUE STATS ---
     st.markdown("""
     <style>
-        .card-stat {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
+        .card-stat { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .stat-label { font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
         .stat-val { font-size: 1.5rem; font-weight: 800; color: #0f172a; display: block; margin-top: 5px; }
-        .export-card {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px dashed #cbd5e1;
-            text-align: center;
-        }
+        .export-card { background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px dashed #cbd5e1; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -89,7 +63,6 @@ def show():
         st.info("ℹ️ Aucune transaction enregistrée.")
         return
 
-    # Chargement des données
     examens = {e["id"]: e for e in data["examens"]}
     prescripteurs = {p["id"]: p["nom"] for p in data["prescripteurs"]}
     decades = {d["id"]: d for d in data["decades"]}
@@ -102,12 +75,9 @@ def show():
         dec = decades.get(t["decade_id"], {})
         pres_nom = prescripteurs.get(t["prescripteur_id"], "Inconnu")
         cat_nom = categories.get(ex.get("categorie_id"), "Autres")
-        
-        # Utiliser le montant déjà calculé dans la transaction (avec réduction)
         montant = t.get("montant", t["quantite_payee"] * ex.get("prix", 0))
         prix_unitaire = t.get("prix_unitaire", ex.get("prix", 0))
         discount_percent = t.get("discount_percent", 0)
-
         records.append({
             "prescripteur": pres_nom,
             "examen": ex.get("nom", ""),
@@ -127,7 +97,6 @@ def show():
         st.info("Aucune transaction trouvée.")
         return
 
-    # --- FILTRES MODERNES ---
     with st.expander("🔍 Options de filtrage", expanded=True):
         f1, f2, f3 = st.columns(3)
         with f1:
@@ -152,7 +121,6 @@ def show():
         st.warning("Aucune donnée pour ces filtres.")
         return
 
-    # --- KPI CARDS ---
     total_montant = df_filtered["montant"].sum()
     total_qte_payee = df_filtered["qte_payee"].sum()
     total_qte_gratuite = df_filtered["qte_gratuite"].sum()
@@ -168,72 +136,68 @@ def show():
     with k4:
         st.markdown(f'<div class="card-stat"><span class="stat-label">Total FCFA</span><span class="stat-val" style="color:#2563eb;">{total_montant:,.0f}</span></div>', unsafe_allow_html=True)
 
-    # --- AFFICHAGE ET EXPORT WORD UNIQUEMENT ---
     st.markdown("<br>", unsafe_allow_html=True)
     col_tab, col_exp = st.columns([2, 1])
-    
     with col_tab:
         st.subheader("📋 Récapitulatif par période")
-        # Créer un pivot avec les montants (déjà réduits)
         pivot_display = df_filtered.groupby(["prescripteur", "decade"])["montant"].sum().unstack(fill_value=0)
         st.dataframe(pivot_display, use_container_width=True)
-        
-        # Afficher un tableau détaillé avec les réductions
         with st.expander("📊 Détail des transactions avec réductions"):
             df_detail = df_filtered[["prescripteur", "examen", "decade", "qte_payee", "qte_gratuite", "prix_unitaire", "discount_percent", "montant"]]
             df_detail = df_detail.rename(columns={
-                "prescripteur": "Prescripteur",
-                "examen": "Examen",
-                "decade": "Décade",
-                "qte_payee": "Payé",
-                "qte_gratuite": "Gratuit",
-                "prix_unitaire": "Prix unitaire (FCFA)",
-                "discount_percent": "Réduction (%)",
-                "montant": "Montant (FCFA)"
+                "prescripteur": "Prescripteur", "examen": "Examen", "decade": "Décade",
+                "qte_payee": "Payé", "qte_gratuite": "Gratuit", "prix_unitaire": "Prix unitaire (FCFA)",
+                "discount_percent": "Réduction (%)", "montant": "Montant (FCFA)"
             })
             st.dataframe(df_detail, use_container_width=True, hide_index=True)
-
     with col_exp:
         st.subheader("📎 Export")
         st.markdown('<div class="export-card">', unsafe_allow_html=True)
         st.write("Rapport par prescripteur (Modèle institutionnel).")
         st.markdown("<br>", unsafe_allow_html=True)
-        
         if st.button("📄 Télécharger WORD", type="primary", key="btn_wd_pres", use_container_width=True):
             export_prescripteur_word(df_filtered)
             st.toast("✅ Rapport Word généré avec succès", icon="📝")
         st.markdown('</div>', unsafe_allow_html=True)
 
-
-# ====================== EXPORT WORD - VERSION AVEC INTERVALLES ET DÉCADE ACTUELLE ======================
 def export_prescripteur_word(df_source):
-    """Génère le rapport Word avec intervalles des décades et décade actuelle dans le titre"""
+    """Génère le rapport Word. Pour la biochimie, seuls combi11, combi2, Glycémie sont comptabilisés."""
     if df_source.empty:
         st.warning("Aucune donnée à exporter.")
         return
 
-    # --- 1. PRÉPARATION ---
     df_work = df_source.copy()
     mask_kit = df_work['examen'].str.contains('Kit|Prélèvement|PRELEVEMENT', case=False, na=False)
     df_kits = df_work[mask_kit]
     df_presc = df_work[~mask_kit].copy()
 
-    df_presc['categorie'] = df_presc['prescripteur'].apply(
+    # Définir la liste des examens de biochimie à prendre en compte
+    biochimie_examens_autorises = ["combi11", "combi2", "Glycémie"]
+    # Normaliser les noms pour comparaison
+    biochimie_examens_norm = [e.lower().strip() for e in biochimie_examens_autorises]
+
+    # Filtrer df_presc : pour la catégorie Biochimie, garder seulement les examens autorisés
+    # Pour les autres catégories, tout garder
+    def keep_row(row):
+        cat = row.get("categorie", "")
+        exam = row.get("examen", "")
+        if cat.lower() == "biochimie":
+            return exam.lower().strip() in biochimie_examens_norm
+        return True
+
+    df_presc = df_presc[df_presc.apply(keep_row, axis=1)]
+
+    df_presc['categorie_pres'] = df_presc['prescripteur'].apply(
         lambda x: "INFIRMIERS" if str(x).startswith("Mme") else "MEDECINS"
     )
-    
+
     dec_order = ["1ère décade", "2ème décade", "3ème décade"]
     dec_labels_with_interval = ["1ère décade (1-10)", "2ème décade (11-20)", "3ème décade (21-30/31)"]
-    
-    # Récupérer le mois et l'année de la date d'impression
+
     mois_impression, annee_impression = get_current_month_and_year()
-    
-    # Récupérer la décade actuelle
     current_decade_info = get_current_decade_info()
-    current_decade_text = ""
-    if current_decade_info:
-        current_decade_text = f" - {current_decade_info['periode']}"
-    
+    current_decade_text = f" - {current_decade_info['periode']}" if current_decade_info else ""
+
     doc = Document()
     section = doc.sections[0]
     section.orientation = WD_ORIENT.LANDSCAPE
@@ -241,38 +205,39 @@ def export_prescripteur_word(df_source):
     section.left_margin = section.right_margin = Inches(0.4)
     section.top_margin = Inches(0.4)
 
-    # --- 2. EN-TÊTE ADMINISTRATIF ---
+    # En-tête bilingue
     header_table = doc.add_table(rows=1, cols=3)
     header_table.width = Inches(10)
-    
-    p_fr = header_table.cell(0, 0).paragraphs[0]
-    p_fr.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    txt_fr = ("REPUBLIQUE DU CAMEROUN\nPaix – Travail – Patrie\n------------\n"
-              "MINISTERE DE LA SANTE PUBLIQUE\n------------\nSECRETARIAT GENERAL\n------------\n"
-              "DELEGATION REGIONALE DE LA SANTE\nPUBLIQUE DU CENTRE\n------------\n"
-              "DISTRICT DE SANTE D'ODZA\n------------\n"
-              "CENTRE MEDICAL D'ARRONDISSEMENT DE NKOMO\nTEL. : 671742644")
-    run_fr = p_fr.add_run(txt_fr)
-    run_fr.bold = True; run_fr.font.size = Pt(7.5)
-
+    def fill_header(cell, lines):
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for line in lines:
+            run = p.add_run(line + "\n")
+            run.bold = True
+            run.font.size = Pt(7)
+    fill_header(header_table.cell(0, 0), [
+        "REPUBLIQUE DU CAMEROUN", "Paix – Travail – Patrie", "------------",
+        "MINISTERE DE LA SANTE PUBLIQUE", "------------",
+        "SECRETARIAT GENERAL", "------------",
+        "DELEGATION REGIONALE DE LA SANTE", "PUBLIQUE DU CENTRE", "------------",
+        "DISTRICT DE SANTE D'ODZA", "------------",
+        "CENTRE MEDICAL D'ARRONDISSEMENT DE NKOMO", "TEL. : 671742644"
+    ])
+    c_logo = header_table.cell(0, 1)
+    p_logo = c_logo.paragraphs[0]
+    p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
     if os.path.exists("logo.png"):
-        logo_para = header_table.cell(0, 1).paragraphs[0]
-        logo_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        logo_para.add_run().add_picture("logo.png", width=Inches(1.2))
+        p_logo.add_run().add_picture("logo.png", width=Inches(1.2))
+    fill_header(header_table.cell(0, 2), [
+        "REPUBLIC OF CAMEROON", "Peace-Work-Fatherland", "------------",
+        "MINISTRY OF PUBLIC HEALTH", "------------",
+        "SECRETARIAT GENERAL", "------------",
+        "CENTER REGIONAL DELEGATION OF", "PUBLIC HEALTH", "-----------",
+        "ODZA HEALTH DISTRICT", "-----------",
+        "NKOMO SUB-DIVISIONAL MEDICAL CENTER"
+    ])
 
-    p_en = header_table.cell(0, 2).paragraphs[0]
-    p_en.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    txt_en = ("REPUBLIC OF CAMEROON\nPeace-Work-Fatherland\n------------\n"
-              "MINISTRY OF PUBLIC HEALTH\n------------\nSECRETARIAT GENERAL\n------------\n"
-              "CENTER REGIONAL DELEGATION OF\nPUBLIC HEALTH\n------------\n"
-              "ODZA HEALTH DISTRICT\n------------\n"
-              "NKOMO SUB-DIVISIONAL MEDICAL CENTER")
-    run_en = p_en.add_run(txt_en)
-    run_en.bold = True; run_en.font.size = Pt(7.5)
-
-    # --- 3. TITRE ET MOIS AVEC DÉCADE ACTUELLE ---
     doc.add_paragraph()
-    
     title_para = doc.add_paragraph()
     title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run_title = title_para.add_run("COMPTE RENDU FINANCIER DES PRESCRIPTEURS AU SERVICE DU LABORATOIRE DU CMA DE NKOMO")
@@ -280,61 +245,78 @@ def export_prescripteur_word(df_source):
     run_title.underline = True
     run_title.font.size = Pt(13)
 
-    # Ajouter le mois et l'année de la date d'impression avec la décade actuelle
     date_para = doc.add_paragraph()
     date_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run_date = date_para.add_run(f"(MOIS DE {mois_impression.upper()} {annee_impression}{current_decade_text})")
     run_date.bold = True
     run_date.font.size = Pt(11)
 
-    # --- 4. CALCULS COMBINÉS (avec montants réduits) ---
-    stats_decades = {dec: {"paye": 0, "gratuit": 0, "montant": 0} for dec in dec_order}
+    # Tableau NOMBRE D'EXAMENS EFFECTUES
+    stats_decades = {}
     for dec in dec_order:
         d_df = df_presc[df_presc['decade'] == dec]
-        stats_decades[dec]["paye"] = int(d_df['qte_payee'].sum())
-        stats_decades[dec]["gratuit"] = int(d_df['qte_gratuite'].sum())
-        stats_decades[dec]["montant"] = int(d_df['montant'].sum())
+        stats_decades[dec] = {
+            "paye": int(d_df['qte_payee'].sum()),
+            "gratuit": int(d_df['qte_gratuite'].sum()),
+            "montant": int(d_df['montant'].sum())
+        }
 
-    # --- 5. TABLEAU : NOMBRE D'EXAMENS EFFECTUES AVEC INTERVALLES ---
     doc.add_paragraph()
     title_ex = doc.add_paragraph("NOMBRE D'EXAMENS EFFECTUES")
     title_ex.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    title_ex.runs[0].bold = True; title_ex.runs[0].underline = True
+    title_ex.runs[0].bold = True
+    title_ex.runs[0].underline = True
 
     exam_table = doc.add_table(rows=2, cols=12)
     exam_table.style = 'Table Grid'
-    
-    # En-têtes décades avec intervalles
     eh1 = exam_table.rows[0].cells
     for i, d_lbl in enumerate(dec_labels_with_interval + ["TOTAL MENSUEL"]):
         eh1[i*3].merge(eh1[i*3+2]).text = d_lbl
         eh1[i*3].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-
     sub_labels = ["Payé", "Gratuit", "TOTAL"] * 4
     for i, lbl in enumerate(sub_labels):
         cell_p = exam_table.rows[1].cells[i].paragraphs[0]
         cell_p.add_run(lbl).bold = True
         cell_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # Remplissage des données
     row_val = exam_table.add_row().cells
     g_p, g_g = 0, 0
     for i, dec in enumerate(dec_order):
         p = stats_decades[dec]["paye"]
         g = stats_decades[dec]["gratuit"]
-        row_val[i*3].text, row_val[i*3+1].text, row_val[i*3+2].text = str(p), str(g), str(p+g)
-        g_p += p; g_g += g
-    row_val[9].text, row_val[10].text, row_val[11].text = str(g_p), str(g_g), str(g_p+g_g)
-    for c in row_val: 
+        row_val[i*3].text = str(p)
+        row_val[i*3+1].text = str(g)
+        row_val[i*3+2].text = str(p+g)
+        g_p += p
+        g_g += g
+    row_val[9].text = str(g_p)
+    row_val[10].text = str(g_g)
+    row_val[11].text = str(g_p+g_g)
+    for c in row_val:
         c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        if c.text: c.paragraphs[0].runs[0].bold = True
+        if c.text:
+            c.paragraphs[0].runs[0].bold = True
 
-    # --- 6. SECTION FINANCIÈRE DÉSAGRÉGÉE AVEC INTERVALLES ---
+    # Rapport financier désagrégé
     doc.add_paragraph()
     trans = doc.add_paragraph("RAPPORT FINANCIER DESAGREGE PAR CATEGORIE ET NOM DES PRESCRIPTEURS")
     trans.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    trans.runs[0].bold = True; trans.runs[0].underline = True
+    trans.runs[0].bold = True
+    trans.runs[0].underline = True
     doc.add_paragraph("(Nombre d'examens effectues et montants)").alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Agrégation des données pour les tableaux financiers
+    agg_presc = df_presc.groupby(["prescripteur", "categorie_pres", "decade"]).agg({
+        "qte_payee": "sum",
+        "qte_gratuite": "sum",
+        "montant": "sum"
+    }).reset_index()
+
+    agg_kits = df_kits.groupby("decade").agg({
+        "qte_payee": "sum",
+        "qte_gratuite": "sum",
+        "montant": "sum"
+    }).reset_index() if not df_kits.empty else pd.DataFrame(columns=["decade", "qte_payee", "qte_gratuite", "montant"])
 
     tot_med = {i: 0 for i in range(1, 13)}
     tot_inf = {i: 0 for i in range(1, 13)}
@@ -346,99 +328,103 @@ def export_prescripteur_word(df_source):
     ]
 
     for idx, (cat_id, cat_lbl) in enumerate(categories_to_show):
-        if idx > 0: doc.add_paragraph()
-        
+        if idx > 0:
+            doc.add_paragraph()
         p_cat = doc.add_paragraph()
         run_cat = p_cat.add_run(cat_lbl)
-        run_cat.bold = True; run_cat.underline = True
-        
+        run_cat.bold = True
+        run_cat.underline = True
+
         table = doc.add_table(rows=2, cols=13)
         table.style = 'Table Grid'
-        
         h1 = table.rows[0].cells
         h1[0].text = "NOM ET PRENOMS"
         for i, d_lbl in enumerate(dec_labels_with_interval + ["TOTAL MENSUEL"]):
-            h1[1+(i*3)].merge(h1[3+(i*3)]).text = d_lbl
-        
+            h1[1 + (i*3)].merge(h1[3 + (i*3)]).text = d_lbl
         h2 = table.rows[1].cells
         labels = ["Payé", "Gratuit", "Montant"] * 4
         for i, txt in enumerate(labels):
             h2[i+1].paragraphs[0].add_run(txt).bold = True
 
-        df_cat = df_presc[df_presc['categorie'] == cat_id]
+        df_cat = agg_presc[agg_presc["categorie_pres"] == cat_id]
         if not df_cat.empty:
-            # Agréger par prescripteur et décade avec les montants (déjà réduits)
-            summ = df_cat.groupby(["prescripteur", "decade"]).agg({
-                "qte_payee": "sum", 
-                "qte_gratuite": "sum", 
-                "montant": "sum"
-            }).reset_index()
-            
-            for presc in summ["prescripteur"].unique():
-                r = table.add_row().cells
-                r[0].text = str(presc)
+            prescripteurs = sorted(df_cat["prescripteur"].unique())
+            for presc in prescripteurs:
+                row = table.add_row().cells
+                row[0].text = str(presc)
                 lp, lg, lm = 0, 0, 0
                 for i, dec in enumerate(dec_order):
-                    d = summ[(summ["prescripteur"]==presc) & (summ["decade"]==dec)]
+                    d = df_cat[(df_cat["prescripteur"] == presc) & (df_cat["decade"] == dec)]
                     p = int(d["qte_payee"].sum()) if not d.empty else 0
                     g = int(d["qte_gratuite"].sum()) if not d.empty else 0
                     m = int(d["montant"].sum()) if not d.empty else 0
-                    r[1+(i*3)].text = str(p) if p>0 else ""
-                    r[2+(i*3)].text = str(g) if g>0 else ""
-                    r[3+(i*3)].text = f"{m:,}" if m>0 else ""
-                    target = tot_med if cat_id == "MEDECINS" else tot_inf
-                    target[1+(i*3)] += p
-                    target[2+(i*3)] += g
-                    target[3+(i*3)] += m
+                    row[1 + i*3].text = str(p) if p else ""
+                    row[2 + i*3].text = str(g) if g else ""
+                    row[3 + i*3].text = f"{m:,}" if m else ""
                     lp += p
                     lg += g
                     lm += m
-                r[10].text, r[11].text, r[12].text = str(lp), str(lg), f"{lm:,}"
+                    target = tot_med if cat_id == "MEDECINS" else tot_inf
+                    target[1 + i*3] += p
+                    target[2 + i*3] += g
+                    target[3 + i*3] += m
+                row[10].text = str(lp) if lp else ""
+                row[11].text = str(lg) if lg else ""
+                row[12].text = f"{lm:,}" if lm else ""
                 target[10] += lp
                 target[11] += lg
                 target[12] += lm
+                for cell in row:
+                    p_par = cell.paragraphs[0]
+                    p_par.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    if p_par.runs:
+                        p_par.runs[0].font.size = Pt(8)
 
-        # Ligne Sous-Total
+        # Sous-total
         sr = table.add_row().cells
         sr[0].paragraphs[0].add_run(f"Sous-Total - {cat_id}").bold = True
         curr = tot_med if cat_id == "MEDECINS" else tot_inf
         for i in range(1, 13):
-            val_txt = f"{curr[i]:,}" if i%3 == 0 else str(curr[i])
-            sr[i].paragraphs[0].add_run(val_txt).bold = True
+            val = curr[i]
+            if i % 3 == 0:
+                sr[i].paragraphs[0].add_run(f"{int(val):,}" if val else "0").bold = True
+            else:
+                sr[i].paragraphs[0].add_run(str(int(val)) if val else "0").bold = True
+            sr[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         if cat_id == "INFIRMIERS":
             for i, dec in enumerate(dec_order):
-                dk = df_kits[df_kits['decade'] == dec]
-                pk = int(dk['qte_payee'].sum()) if not dk.empty else 0
-                gk = int(dk['qte_gratuite'].sum()) if not dk.empty else 0
-                mk = int(dk['montant'].sum()) if not dk.empty else 0
-                tot_kit[1+(i*3)], tot_kit[2+(i*3)], tot_kit[3+(i*3)] = pk, gk, mk
+                dk = agg_kits[agg_kits["decade"] == dec]
+                pk = int(dk["qte_payee"].sum()) if not dk.empty else 0
+                gk = int(dk["qte_gratuite"].sum()) if not dk.empty else 0
+                mk = int(dk["montant"].sum()) if not dk.empty else 0
+                tot_kit[1 + i*3] = pk
+                tot_kit[2 + i*3] = gk
+                tot_kit[3 + i*3] = mk
                 tot_kit[10] += pk
                 tot_kit[11] += gk
                 tot_kit[12] += mk
 
-            for lbl, vals in [("TOTAL GENERAL", {i: tot_med[i]+tot_inf[i] for i in range(1,13)}),
+            for lbl, vals in [("TOTAL GENERAL", {i: tot_med[i] + tot_inf[i] for i in range(1,13)}),
                               ("KIT PRELEVEMENT", tot_kit),
-                              ("TOTAL GLOBAL", {i: tot_med[i]+tot_inf[i]+tot_kit[i] for i in range(1,13)})]:
+                              ("TOTAL GLOBAL", {i: tot_med[i] + tot_inf[i] + tot_kit[i] for i in range(1,13)})]:
                 r = table.add_row().cells
                 r[0].paragraphs[0].add_run(lbl).bold = True
                 for i in range(1, 13):
-                    v_txt = f"{vals[i]:,}" if i%3 == 0 else str(vals[i])
-                    r[i].paragraphs[0].add_run(v_txt).bold = True
+                    v = vals[i]
+                    if i % 3 == 0:
+                        r[i].paragraphs[0].add_run(f"{int(v):,}" if v else "0").bold = True
+                    else:
+                        r[i].paragraphs[0].add_run(str(int(v)) if v else "0").bold = True
+                    r[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # --- 7. SORTIE ---
     out = BytesIO()
     doc.save(out)
     out.seek(0)
-    
-    # Générer le nom du fichier avec la date d'impression
     date_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f"RAPPORT_PRESCRIPTEURS_{date_str}.docx"
-    
-    # Téléchargement direct
     st.download_button(
         label="⬇️ Télécharger le Rapport Word Officiel",
         data=out,
-        file_name=filename,
+        file_name=f"RAPPORT_PRESCRIPTEURS_{date_str}.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
